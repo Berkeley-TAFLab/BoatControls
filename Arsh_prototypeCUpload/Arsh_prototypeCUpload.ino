@@ -17,17 +17,21 @@ int serv1, serv2;
 int ledPin = 8; 
 int currentServoPosition = 0;
 
+//Calibration value used to get us the true 0 position. 
+int offset = 37;
+
 void setup() {
     Serial.begin(115200);
+
     Wire.begin();
     as5600.begin(4);
-    as5600.setDirection(AS5600_COUNTERCLOCK_WISE);
-    // myServo.attach(2);
-    //tailServo.attach(2);
+    as5600.setDirection(AS5600_CLOCK_WISE);
+    //tailServo.attach(9);
     sailServo.attach(2);
     pinMode(ledPin, OUTPUT); 
+    //Serial.println("Turning on.");
 
-    moveServoCubic(sailServo.read(),180,100, 10);
+
 
 
 
@@ -67,6 +71,25 @@ void loop() {
     encoderSum += encoderReading;
     encoderCount++;
 
+    // sailServo.write(180);
+    // delay(1000);
+    // sailServo.write(135);
+    // delay(1000);
+    // sailServo.write(90);
+    // delay(1000);
+    // sailServo.write(45);
+    // delay(1000);
+    // sailServo.write(0);
+    // delay(1000);
+    // sailServo.write(45);
+    // delay(1000);
+    // sailServo.write(90);
+    // delay(1000);
+    // sailServo.write(135);
+    // delay(1000);
+
+
+
 
     if (millis() - lastUpdateTime >= updateInterval) {
 
@@ -74,20 +97,23 @@ void loop() {
             float averageWindVaneAngle = (float)encoderSum / encoderCount;
             Serial.print("Average Windvane Angle: ");
             Serial.println(averageWindVaneAngle);
-            int correctedWindVaneAngle = (int) ((averageWindVaneAngle/4095) * 360);
+            int correctedWindVaneAngle = (int) ((averageWindVaneAngle/4095) * 360) + offset; 
+            if(correctedWindVaneAngle > 360){
+              correctedWindVaneAngle = correctedWindVaneAngle % 360;
+            }
             Serial.print("Corrected Windvane: ");
             Serial.println(correctedWindVaneAngle);
             int servoTarget = (correctedWindVaneAngle /2 ) % 180;
 
             if (abs(servoTarget - currentServoPosition) > 5) {
-              moveServoCubic(sailServo.read(), 180 - servoTarget,100, 10);
+              moveServoCubic(sailServo.read(), 180-servoTarget,100, 10);
             }
             Serial.print("Millis: ");
             Serial.print(millis());
             Serial.print("\t Average Angle: ");
             Serial.print(correctedWindVaneAngle);
             Serial.print("\t Servo Target: ");
-            Serial.println(servoTarget);
+            Serial.println(180 - servoTarget);
 
             // Reset for next average calculation
             encoderSum = 0;
@@ -98,7 +124,6 @@ void loop() {
     }
 
     // Minimal delay to keep loop responsive but efficient
-    delay(100);
 }
 
 
