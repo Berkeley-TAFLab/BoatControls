@@ -1,3 +1,6 @@
+
+//USER LIBRARIES 
+
 //#include <RH_ASK.h>
 #include <Servo.h>
 #include <Wire.h>
@@ -5,6 +8,11 @@
 //#ifdef RH_HAVE_HARDWARE_SPI
 //#include <SPI.h>
 //#endif
+
+//USER CONSTANTS 
+
+#define ENC_CONST_OFFSET 180; //Use this value to set where the 0 should be
+#define ENC_USER_OFFSET = 0;  //the encoder itself will sometimes move, use this value to correct the zeroed location.
 
 AS5600 as5600;
 Servo tailServo, sailServo;
@@ -18,7 +26,6 @@ int ledPin = 8;
 int currentServoPosition = 0;
 
 //Calibration value used to get us the true 0 position. 
-int offset = 37;
 
 void setup() {
     Serial.begin(115200);
@@ -29,7 +36,6 @@ void setup() {
     //tailServo.attach(9);
     sailServo.attach(2);
     pinMode(ledPin, OUTPUT); 
-    //Serial.println("Turning on.");
 
 
 
@@ -65,49 +71,34 @@ void loop() {
 
     // Process encoder readings for wind vane angle at regular intervals
     long encoderReading = as5600.readAngle();
-    int rawReading = map(encoderReading, 0, 4095, 0, 360);
 
 
     encoderSum += encoderReading;
     encoderCount++;
 
-    // sailServo.write(180);
-    // delay(1000);
-    // sailServo.write(135);
-    // delay(1000);
-    // sailServo.write(90);
-    // delay(1000);
-    // sailServo.write(45);
-    // delay(1000);
-    // sailServo.write(0);
-    // delay(1000);
-    // sailServo.write(45);
-    // delay(1000);
-    // sailServo.write(90);
-    // delay(1000);
-    // sailServo.write(135);
-    // delay(1000);
-
-
-
-
     if (millis() - lastUpdateTime >= updateInterval) {
 
         if (encoderCount > 0) { // Prevent division by zero
             float averageWindVaneAngle = (float)encoderSum / encoderCount;
+
+            //Debugging purposes
             Serial.print("Average Windvane Angle: ");
             Serial.println(averageWindVaneAngle);
-            int correctedWindVaneAngle = (int) ((averageWindVaneAngle/4095) * 360) + offset; 
+
+            int correctedWindVaneAngle = (int) ((averageWindVaneAngle/4095) * 360) + ENC_USER_OFFSET + ENC_CONST_OFFSET; 
             if(correctedWindVaneAngle > 360){
               correctedWindVaneAngle = correctedWindVaneAngle % 360;
             }
-            Serial.print("Corrected Windvane: ");
-            Serial.println(correctedWindVaneAngle);
-            int servoTarget = (correctedWindVaneAngle /2 ) % 180;
 
-            if (abs(servoTarget - currentServoPosition) > 5) {
-              moveServoCubic(sailServo.read(), 180-servoTarget,100, 10);
-            }
+
+            Serial.print("Corrected Windvane: ");
+            Serial.println(correctedWindVaneAngle); 
+
+
+            int servoTarget = (correctedWindVaneAngle /2 ) % 180;
+            moveServoCubic(sailServo.read(), 180-servoTarget,100, 10);
+
+            //Print Time elapsed, average angle, and the desired angle
             Serial.print("Millis: ");
             Serial.print(millis());
             Serial.print("\t Average Angle: ");
