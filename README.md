@@ -9,4 +9,4 @@ moves from 0 degrees to 360 degrees (since the encoder resets). A possible solut
 Firmware wise, the boat should basically be ready to test 
 
 ## 5/20/24
-Created branch for stepper and servo.
+Created folders for servo and stepper controls. Will keep organizing code within those two folders. Future devlog updates will also probably go in the readmes in those two folders. 
