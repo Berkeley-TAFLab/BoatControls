@@ -1,22 +1,33 @@
 
 //USER LIBRARIES 
 
-//#include <RH_ASK.h>
+/*
+  IMPORTANT PINOUTS
+  Sail PWM pin - ~2 
+  Tail PWM pin - ~9 Not too sure about this one 
+  Radio pin 
+  I2C SDA - A4
+  I2C SCL - A5 
+
+
+*/
+
+#include <RH_ASK.h>
 #include <Servo.h>
 #include <Wire.h>
 #include "AS5600.h"
-//#ifdef RH_HAVE_HARDWARE_SPI
-//#include <SPI.h>
-//#endif
+#ifdef RH_HAVE_HARDWARE_SPI
+#include <SPI.h>
+#endif
 
 //USER CONSTANTS 
 
 #define ENC_CONST_OFFSET 180; //Use this value to set where the 0 should be
-#define ENC_USER_OFFSET = 0;  //the encoder itself will sometimes move, use this value to correct the zeroed location.
+#define ENC_USER_OFFSET  37;  //the encoder itself will sometimes move, use this value to correct the zeroed location.
 
 AS5600 as5600;
 Servo tailServo, sailServo;
-//RH_ASK driver;
+RH_ASK driver;
 unsigned long lastUpdateTime = 0;
 const long updateInterval = 500; // Update interval in milliseconds
 long encoderSum = 0;
@@ -28,27 +39,32 @@ int currentServoPosition = 0;
 //Calibration value used to get us the true 0 position. 
 
 void setup() {
+    //Serial start for regular UART communication 
     Serial.begin(115200);
 
     Wire.begin();
+
+    //For reading the encoder position
     as5600.begin(4);
     as5600.setDirection(AS5600_CLOCK_WISE);
-    //tailServo.attach(9);
+
+    //Assign the tail servo and sail servo pins.
+    tailServo.attach(9);
     sailServo.attach(2);
+
+    //Assign LED pin.
     pinMode(ledPin, OUTPUT); 
 
-
-
-
-
-    // if (!driver.init()) {
-    //     Serial.println("init failed");
-    // } else {
-    //     Serial.println("RH_ASK Driver Initialized");
-    // }
+    //Apparently This is for initializing all the RF stuff
+    if (!driver.init()) {
+        Serial.println("init failed");
+    } else {
+        Serial.println("RH_ASK Driver Initialized");
+    }
 }
 
 void loop() {
+    //Buffers used for wireless communication.
     uint8_t buf[7]; // Buffer for storing incoming data
     uint8_t buflen = sizeof(buf); // Length of the buffer
 
@@ -96,7 +112,7 @@ void loop() {
 
 
             int servoTarget = (correctedWindVaneAngle /2 ) % 180;
-            moveServoCubic(sailServo.read(), 180-servoTarget,100, 10);
+            // moveServoCubic(sailServo.read(), 180-servoTarget,100, 20);
 
             //Print Time elapsed, average angle, and the desired angle
             Serial.print("Millis: ");

@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../TestESP"
+		},
+		{
+			"name": "ESPConversion",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
