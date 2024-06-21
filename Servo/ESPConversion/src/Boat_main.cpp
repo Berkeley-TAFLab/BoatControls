@@ -1,6 +1,11 @@
 #include <Arduino.h>
+#include <Wire.h>
+
 #include "constants.h"
 #include "Boat_main.h"
+#include "Windvane.h" 
+
+
 //Detect if there's waterin the bottom of the boat, alert if so
 void water_detection_task(void* parameter){
     while(1){
@@ -30,7 +35,7 @@ void steering_task(void* parameter){
                 Serial.println("Currently in Auto mode");
                 break;
             default:
-                Serial.println("Unknkown Command...");
+                Serial.println("Unknown Command...");
                 break; 
         }
 
@@ -68,7 +73,12 @@ void user_input_task(void* parameter){
 //Collect readings from the imu, encoder, gps
 void sensor_readings_task(void* parameter){
     while(1){
-        
+        read_wind_vane();
+        // read_imu();
+        // read_gps();
+
+        vTaskDelay(SENSOR_READ_DELAY/portTICK_PERIOD_MS);
+
     }
 }
 
@@ -77,16 +87,25 @@ void sensor_readings_task(void* parameter){
 //Feel free to experiment with it 
 void test_serial_task(void* parameter){
     while(1){
-        Serial.println("Testing serial task");
+        uint16_t avg_angle = get_avg_angle();
+        Serial.println(avg_angle);
         vTaskDelay(1000/portTICK_PERIOD_MS);
     }
 } 
 
 
 void main_setup(){
-     // put your setup code here, to run once:
-  Serial.begin(9600);
-  delay(1000); //Delay necessary in order to finish setting up the serial monitor
-  //Initialize the state machine before doing anything
-  sm_init();
+    // put your setup code here, to run once:
+
+    //Initialize Serial Monitor
+    Serial.begin(SERIAL_BAUD); 
+
+    //Initialize peripherals related to the encoder 
+    windvane_init();
+    
+    //Initialize the state machine before doing anything
+    sm_init();
+
+
+    delay(1000); //Delay necessary in order to finish setting up peripherals
 }

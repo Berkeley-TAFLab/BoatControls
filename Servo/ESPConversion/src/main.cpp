@@ -10,14 +10,15 @@ static const BaseType_t app_cpu = 1;
 void setup() {
 
   //Function to setup required Peripherals
-  main_setup();
+  main_setup(); 
+  
   //Initialize water detection task
   xTaskCreatePinnedToCore(
     water_detection_task, 
     "Water Detection",
     1024, 
     NULL,
-    5,
+    WATER_DETECTION_PRIO,
     NULL,
     app_cpu
   );
@@ -28,7 +29,7 @@ void setup() {
     "User Input",
     1024, 
     NULL,
-    2,
+    USER_INPUT_PRIO,
     NULL,
     app_cpu
   );
@@ -39,7 +40,7 @@ void setup() {
     "Steering",
     1024, 
     NULL,
-    3,
+    STEERING_PRIO,
     NULL,
     app_cpu
   );
@@ -47,14 +48,14 @@ void setup() {
   xTaskCreatePinnedToCore(
     sensor_readings_task,
     "Sensors",
-    1024,
+    4096,
     NULL,
-    4,
+    SENSOR_READ_PRIO,
     NULL,
     app_cpu
   );
 
-  //Initialize Serial task
+  // Initialize Serial task
   xTaskCreatePinnedToCore(
     test_serial_task, 
     "Test Task",
