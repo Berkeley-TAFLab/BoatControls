@@ -1,3 +1,8 @@
+/*
+    This file defines all the different states 
+*/
+
+
 enum SM_States {
     IDLE, 
     MANUAL,

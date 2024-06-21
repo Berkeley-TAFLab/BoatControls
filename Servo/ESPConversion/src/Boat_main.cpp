@@ -1,9 +1,12 @@
+//Predefined Libraries and headers
 #include <Arduino.h>
 #include <Wire.h>
 
+//User defined libraries and headers
 #include "constants.h"
 #include "Boat_main.h"
-#include "Windvane.h" 
+#include "TAF_AS5600.h" 
+#include "TAF_MPU6050.h"
 
 
 //Detect if there's waterin the bottom of the boat, alert if so
@@ -73,10 +76,12 @@ void user_input_task(void* parameter){
 //Collect readings from the imu, encoder, gps
 void sensor_readings_task(void* parameter){
     while(1){
-        read_wind_vane();
+        // read_wind_vane();
+        read_mpu6050();
         // read_imu();
         // read_gps();
 
+        //See constants.h file for delay settings
         vTaskDelay(SENSOR_READ_DELAY/portTICK_PERIOD_MS);
 
     }
@@ -93,19 +98,28 @@ void test_serial_task(void* parameter){
     }
 } 
 
+//Some peripherals get used by all sensors, this contains 
+// those peripherals
+void general_init(){
+
+    //Used by all I2C devices
+    Wire.begin(ENCODER_SDA_PIN,ENCODER_SCL_PIN); 
+
+}
 
 void main_setup(){
-    // put your setup code here, to run once:
-
     //Initialize Serial Monitor
     Serial.begin(SERIAL_BAUD); 
 
+    general_init();
     //Initialize peripherals related to the encoder 
-    windvane_init();
+    windvane_init(); // This is needed because of the semaphores unfortunately. DON'T COMMENT OUT 
+    setup_mpu6050(); // used for setup with the imu
     
     //Initialize the state machine before doing anything
     sm_init();
 
-
     delay(1000); //Delay necessary in order to finish setting up peripherals
 }
+
+

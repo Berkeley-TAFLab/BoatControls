@@ -9,10 +9,12 @@
 
 
 //User defined libraries and headers
-#include "Windvane.h" 
+#include "TAF_AS5600.h" 
 #include "constants.h"
 
-// ======================================== ENCODER ================================================
+//User defined variables and constants 
+AS5600 as5600; 
+
 static SemaphoreHandle_t last_read_angle_sem;
 volatile uint16_t last_read_angle = 0; //Marked as volatile since other threads can access it 
 static SemaphoreHandle_t avg_angle_sem;
@@ -21,8 +23,6 @@ volatile uint16_t avg_angle = 0; //Marked as volatile since other threads may ac
 uint8_t tick = 0;
 uint16_t running_sum = 0;
 
-//User defined variables and constants 
-AS5600 as5600; //Should have been defined in Boat_main.cpp
 
 //Reads current value from windvane and calculates average if possible
 void read_wind_vane(){
@@ -75,12 +75,10 @@ uint16_t get_avg_angle(){
     //Return -1 if unable to receive semaphore
     return return_val; 
 } 
-//====================================================================================
 
 //Initialization function for any sensors that require it.
 void windvane_init(){
     //Initialization required for AS5600 encoder
-    Wire.begin(ENCODER_SDA_PIN,ENCODER_SCL_PIN);
     as5600.begin();
     as5600.setDirection(AS5600_CLOCK_WISE);
     as5600.setOffset(0);
