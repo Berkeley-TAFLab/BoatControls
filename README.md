@@ -12,7 +12,8 @@ Firmware wise, the boat should basically be ready to test
 Created folders for servo and stepper controls. Will keep organizing code within those two folders. Future devlog updates will also probably go in the readmes in those two folders.   
 
 ## 6/20/24 
-Added header and source files for AS5600 Encoder in RTOS project
+After experimenting with ESP32 and FreeRTOS for a while I've finally been able to setup a proper project that we can use to move away from the Arduinos. Uploaded files in the Servo folder
+Added header and source files for AS5600 Encoder in RTOS project. 
 
 ## 6/21/24 
 Added header and source files for MPU6050 IMU and LIS3MDL Magnetometer in RTOS project 
