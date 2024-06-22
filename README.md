@@ -9,4 +9,10 @@ moves from 0 degrees to 360 degrees (since the encoder resets). A possible solut
 Firmware wise, the boat should basically be ready to test 
 
 ## 5/20/24
-Created folders for servo and stepper controls. Will keep organizing code within those two folders. Future devlog updates will also probably go in the readmes in those two folders. 
+Created folders for servo and stepper controls. Will keep organizing code within those two folders. Future devlog updates will also probably go in the readmes in those two folders.   
+
+## 6/20/24 
+Added header and source files for AS5600 Encoder in RTOS project
+
+## 6/21/24 
+Added header and source files for MPU6050 IMU and LIS3MDL Magnetometer in RTOS project 
