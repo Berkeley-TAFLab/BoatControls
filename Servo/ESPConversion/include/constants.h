@@ -22,4 +22,18 @@
 #define TEST_TASK_DELAY       500 
 
 //Peripheral setup
-#define SERIAL_BAUD 9600 //Set to whatever you want. Platform.io has a default baudrate of 9600
+#define SERIAL_BAUD 9600 //Set to whatever you want. Platform.io has a default baudrate of 9600 
+
+//Calibration values for the lis3mdl hard iron distortion 
+const float lis3mdl_hard_iron_vals[3] = {
+    0.0,
+    0.0,
+    0.0
+};
+
+//Calibration values for lis3mdl soft iron distortion
+const float lis3mdl_soft_iron_vals[3][3] = {
+    {0.0 , 0.0 , 0.0},
+    {0.0 , 0.0 , 0.0},
+    {0.0 , 0.0 , 0.0}
+};

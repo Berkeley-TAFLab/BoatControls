@@ -1,5 +1,5 @@
 /*
-    This file is contains source code related to reading the windvane
+    This file is contains source code related to reading the AS5600 Encoder.
 */
 
 //Predefined Libraries 
