@@ -7,6 +7,7 @@
 #include "Boat_main.h"
 #include "TAF_AS5600.h" 
 #include "TAF_MPU6050.h"
+#include "TAF_LIS3MDL.h"
 
 
 //Detect if there's waterin the bottom of the boat, alert if so
@@ -73,11 +74,15 @@ void user_input_task(void* parameter){
 
 }
 
-//Collect readings from the imu, encoder, gps
+//Collect readings from the imu, encoder, magnetometer,gps
 void sensor_readings_task(void* parameter){
     while(1){
         // read_wind_vane();
-        read_mpu6050();
+        // read_mpu6050();
+        read_lis3mdl();
+        float heading = get_heading_lis3mdl();
+        Serial.print("Heading: ");
+        Serial.println(heading);
         // read_imu();
         // read_gps();
 
@@ -114,7 +119,8 @@ void main_setup(){
     general_init();
     //Initialize peripherals related to the encoder 
     windvane_init(); // This is needed because of the semaphores unfortunately. DON'T COMMENT OUT 
-    setup_mpu6050(); // used for setup with the imu
+    setup_mpu6050(); // used for setup with the imu 
+    setup_lis3mdl();
     
     //Initialize the state machine before doing anything
     sm_init();

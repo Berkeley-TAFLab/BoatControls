@@ -3,6 +3,8 @@
 #define WATER_LEVEL_PIN 36 
 #define SAIL_SERVO_PIN 13 
 #define TAIL_SERVO_PIN 7 //This needs to be redefined 
+
+//Static pin definitions. You should try to refrain from changing these 
 #define ENCODER_SDA_PIN 21 //Don't change
 #define ENCODER_SCL_PIN 22 //Don't change
 
@@ -33,7 +35,7 @@ const float lis3mdl_hard_iron_vals[3] = {
 
 //Calibration values for lis3mdl soft iron distortion
 const float lis3mdl_soft_iron_vals[3][3] = {
-    {0.0 , 0.0 , 0.0},
-    {0.0 , 0.0 , 0.0},
-    {0.0 , 0.0 , 0.0}
+    {1.0 , 1.0 , 1.0},
+    {1.0 , 1.0 , 1.0},
+    {1.0 , 1.0 , 1.0}
 };
