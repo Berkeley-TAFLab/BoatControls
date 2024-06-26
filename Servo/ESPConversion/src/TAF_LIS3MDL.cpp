@@ -74,7 +74,7 @@ void setup_lis3mdl(){
     lis3mdl.setOperationMode(LIS3MDL_CONTINUOUSMODE); 
     lis3mdl.setDataRate(LIS3MDL_DATARATE_155_HZ);
     lis3mdl.setRange(LIS3MDL_RANGE_4_GAUSS);
-    lis3mdl.setIntThreshold(500);
+    // lis3mdl.setIntThreshold(500);  // I don't think this line is actually needed
 
 
 

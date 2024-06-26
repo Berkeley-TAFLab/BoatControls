@@ -1,10 +1,14 @@
-#include "Boat_SM.h"
 /*
     States 
         1. Idle / standby 
         2. Manual 
         3. Autonomous 
 */
+
+
+//User defined libraries and headers
+#include "Boat_SM.h"
+
 
 //This variable is most likely going to need some sort of lock on it .
 SM_States curr_state;
