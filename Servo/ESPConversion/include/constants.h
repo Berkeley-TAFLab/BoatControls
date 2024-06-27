@@ -2,7 +2,10 @@
 #define LED_PIN 2
 #define WATER_LEVEL_PIN 36 
 #define SAIL_SERVO_PIN 13 
-#define TAIL_SERVO_PIN 7 //This needs to be redefined 
+#define TAIL_SERVO_PIN 7 //This needs to be redefined  
+
+#define GPS_RX_PIN 16 //From tx on gps to rx on esp32
+#define GPS_TX_PIN 17 //From Rx on esp32 to tx on gps but you can maybe disregard this entirely
 
 //Static pin definitions. You should try to refrain from changing these 
 #define ENCODER_SDA_PIN 21 //Don't change
@@ -38,4 +41,7 @@ const float lis3mdl_soft_iron_vals[3][3] = {
     {1.045 , 0.050 , 0.003},
     {0.050 , 0.998 , 0.004},
     {0.003 , 0.004 , 0.962}
-};
+}; 
+
+
+//Debugging variables to disable certain setup tasks or functions

@@ -1,6 +1,7 @@
 //Predefined Libraries and headers
 #include <Arduino.h>
 #include <Wire.h>
+#include <HardwareSerial.h>
 
 //User defined libraries and headers
 #include "constants.h"
@@ -8,7 +9,9 @@
 #include "TAF_AS5600.h" 
 #include "TAF_MPU6050.h"
 #include "TAF_LIS3MDL.h"
+#include "TAF_GTU7.h"
 
+HardwareSerial Gps_Serial(1);
 
 //Detect if there's waterin the bottom of the boat, alert if so
 void water_detection_task(void* parameter){
@@ -50,7 +53,9 @@ void steering_task(void* parameter){
 
 void user_input_task(void* parameter){
     //TODO: As of Jun 18, use the serial monitor, later upgrade to an Xbee.
-    // Maybe this stuff should be triggered via interrupt later
+    // Maybe this stuff should be triggered via interrupt later 
+
+    //As of Jun 27 This section should no longer use serial monitor
     while(1){
           if (Serial.available() > 0) {
             // read the incoming byte:
@@ -80,11 +85,21 @@ void sensor_readings_task(void* parameter){
         // read_wind_vane();
         read_mpu6050();
         read_lis3mdl();
+        read_gtu7();
+
         float heading = get_heading_lis3mdl();
         Serial.print("Heading: ");
-        Serial.println(heading);
+        Serial.println(heading); 
+        if(valid_data()){
+            Serial.print("Lat: ");
+            Serial.println(get_gtu7_lat());
+
+            Serial.print("Long: ");
+            Serial.println(get_gtu7_long());
+        }else{
+            Serial.println("No data from GPS");
+        }
         // read_imu();
-        // read_gps();
 
         //See constants.h file for delay settings
         vTaskDelay(SENSOR_READ_DELAY/portTICK_PERIOD_MS);
@@ -98,7 +113,7 @@ void sensor_readings_task(void* parameter){
 void test_serial_task(void* parameter){
     while(1){
         uint16_t avg_angle = get_avg_angle();
-        Serial.println(avg_angle);
+        // Serial.println(avg_angle);
         vTaskDelay(1000/portTICK_PERIOD_MS);
     }
 } 
@@ -108,8 +123,8 @@ void test_serial_task(void* parameter){
 void general_init(){
 
     //Used by all I2C devices
-    Wire.begin(ENCODER_SDA_PIN,ENCODER_SCL_PIN); 
-
+    Wire.begin(ENCODER_SDA_PIN,ENCODER_SCL_PIN);  
+    Gps_Serial.begin(9600,SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
 }
 
 void main_setup(){
