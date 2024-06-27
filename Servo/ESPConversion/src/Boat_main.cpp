@@ -78,7 +78,7 @@ void user_input_task(void* parameter){
 void sensor_readings_task(void* parameter){
     while(1){
         // read_wind_vane();
-        // read_mpu6050();
+        read_mpu6050();
         read_lis3mdl();
         float heading = get_heading_lis3mdl();
         Serial.print("Heading: ");
