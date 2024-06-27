@@ -19,4 +19,8 @@ Added header and source files for AS5600 Encoder in RTOS project.
 Added header and source files for MPU6050 IMU and LIS3MDL Magnetometer in RTOS project 
 
 ## 6/26/24 
-Source file for MPU6050 completed a few days ago. LIS3MDL still needs debugging as we had issues communicating with it through I2C. Some calibration might be necessary
+Source file for MPU6050 completed a few days ago. LIS3MDL still needs debugging as we had issues communicating with it through I2C. Some calibration might be necessary. 
+
+## 6/27/24 
+LIS3MDL was finished yesterday. Turns out previous unit might have been broken? There was some issues using the standard LIS3MDL library so I resorted to using the Adafruit Sensor Lab library.
+Some calibration constants were updated. They should be updated again as our breadboard is put into the actual boat.
