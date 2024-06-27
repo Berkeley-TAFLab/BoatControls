@@ -28,14 +28,14 @@
 
 //Calibration values for the lis3mdl hard iron distortion 
 const float lis3mdl_hard_iron_vals[3] = {
-    0.0,
-    0.0,
-    0.0
+    -13.47,
+    -13.94,
+    -51.89
 };
 
 //Calibration values for lis3mdl soft iron distortion
 const float lis3mdl_soft_iron_vals[3][3] = {
-    {1.0 , 1.0 , 1.0},
-    {1.0 , 1.0 , 1.0},
-    {1.0 , 1.0 , 1.0}
+    {1.045 , 0.050 , 0.003},
+    {0.050 , 0.998 , 0.004},
+    {0.003 , 0.004 , 0.962}
 };

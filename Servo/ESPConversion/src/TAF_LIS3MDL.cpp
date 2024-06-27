@@ -2,8 +2,8 @@
     This file contains all source code related to using the LIS3MDL Magnetometer
 */
 
-//Predefined libraries and headers
-#include <Adafruit_LIS3MDL.h> 
+//Predefined libraries and headers 
+#include <Adafruit_SensorLab.h>
 #include <Arduino.h>
 
 //User defined libraries and headers 
@@ -11,26 +11,36 @@
 #include "constants.h" // Include for calibration values
 
 //User defined variables 
-Adafruit_LIS3MDL lis3mdl;  // Initialize magnetometer instance 
+Adafruit_SensorLab lab;
+
+Adafruit_Sensor *mag = NULL;
+
+sensors_event_t mag_event;
 
 // static SemaphoreHandle_t magnetometer_data;
 float mag_data[3] = {0,0,0};
 
 
 void read_lis3mdl(){
-    lis3mdl.read();  
+
+    if(mag && ! mag->getEvent(&mag_event)){
+        Serial.println("Could not receive mag data");
+        return;
+    }
+
+    mag_data[0] = mag_event.magnetic.x; 
+    mag_data[1] = mag_event.magnetic.y; 
+    mag_data[2] = mag_event.magnetic.z; 
+
     Serial.print("X_reading: ");
-    Serial.println(lis3mdl.x);
+    Serial.println(mag_event.magnetic.x);
 
     Serial.print("Y_reading: ");
-    Serial.println(lis3mdl.y);
+    Serial.println(mag_event.magnetic.y);
 
     Serial.print("Z_reading: ");
-    Serial.println(lis3mdl.z);
+    Serial.println(mag_event.magnetic.z);
     
-    mag_data[0] = lis3mdl.x; 
-    mag_data[1] = lis3mdl.y; 
-    mag_data[2] = lis3mdl.z;
 } 
 
 float get_heading_lis3mdl(){
@@ -60,22 +70,11 @@ float get_heading_lis3mdl(){
 } 
 
 
-void setup_lis3mdl(){
-    if(!lis3mdl.begin_I2C()){
-        Serial.println("Unable to initialize magnetometer");
-    }else{
-        Serial.println("Initializd magnetometer");
-    }  
-
-    // magnetometer_data = xSemaphoreCreateMutex();
-
-    //Hopefully these lines won't be needed but I'll keep them in case
-    lis3mdl.setPerformanceMode(LIS3MDL_MEDIUMMODE);
-    lis3mdl.setOperationMode(LIS3MDL_CONTINUOUSMODE); 
-    lis3mdl.setDataRate(LIS3MDL_DATARATE_155_HZ);
-    lis3mdl.setRange(LIS3MDL_RANGE_4_GAUSS);
-    // lis3mdl.setIntThreshold(500);  // I don't think this line is actually needed
-
-
+void setup_lis3mdl(){  
+    lab.begin();
+    mag = lab.getMagnetometer();
+    if(!mag){
+        Serial.println("Could not find magnetometer");
+    } 
 
 } 
