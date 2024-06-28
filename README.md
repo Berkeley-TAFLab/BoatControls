@@ -23,4 +23,5 @@ Source file for MPU6050 completed a few days ago. LIS3MDL still needs debugging 
 
 ## 6/27/24 
 LIS3MDL was finished yesterday. Turns out previous unit might have been broken? There was some issues using the standard LIS3MDL library so I resorted to using the Adafruit Sensor Lab library.
-Some calibration constants were updated. They should be updated again as our breadboard is put into the actual boat.
+Some calibration constants were updated. They should be updated again as our breadboard is put into the actual boat. Finished adding in GPS to the source files as well. Next up is the 433 MHz radio
+I should also start trying to get a GUI up and running that would be pretty cool. Also figure out some comm protocol to send data.

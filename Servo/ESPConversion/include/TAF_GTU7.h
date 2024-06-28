@@ -2,7 +2,7 @@
 
 void read_gtu7(); //Read UART transmission from gtu7 module 
 
-bool valid_data(); // Is the most recent data valid
+bool valid_data(); // Is the most recent data valid. Strongly suggest using this before accessing data
 
 float get_gtu7_lat(); //Retrieve stored latitude data from gtu7 module
 

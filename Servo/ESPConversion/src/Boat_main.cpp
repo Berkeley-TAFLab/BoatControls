@@ -11,7 +11,8 @@
 #include "TAF_LIS3MDL.h"
 #include "TAF_GTU7.h"
 
-HardwareSerial Gps_Serial(1);
+//Private user defines. These will likely be used by sensors in their respective source files
+HardwareSerial Gps_Serial(1); //Variable used by the GPS
 
 //Detect if there's waterin the bottom of the boat, alert if so
 void water_detection_task(void* parameter){
@@ -85,21 +86,8 @@ void sensor_readings_task(void* parameter){
         // read_wind_vane();
         read_mpu6050();
         read_lis3mdl();
-        read_gtu7();
+        read_gtu7(); 
 
-        float heading = get_heading_lis3mdl();
-        Serial.print("Heading: ");
-        Serial.println(heading); 
-        if(valid_data()){
-            Serial.print("Lat: ");
-            Serial.println(get_gtu7_lat());
-
-            Serial.print("Long: ");
-            Serial.println(get_gtu7_long());
-        }else{
-            Serial.println("No data from GPS");
-        }
-        // read_imu();
 
         //See constants.h file for delay settings
         vTaskDelay(SENSOR_READ_DELAY/portTICK_PERIOD_MS);
@@ -112,8 +100,8 @@ void sensor_readings_task(void* parameter){
 //Feel free to experiment with it 
 void test_serial_task(void* parameter){
     while(1){
-        uint16_t avg_angle = get_avg_angle();
-        // Serial.println(avg_angle);
+        //Add something here. Uncomment below if you want
+        // Serial.println("Hello World!");
         vTaskDelay(1000/portTICK_PERIOD_MS);
     }
 } 
@@ -131,8 +119,10 @@ void main_setup(){
     //Initialize Serial Monitor
     Serial.begin(SERIAL_BAUD); 
 
+    //Hardware peripheral initialization
     general_init();
-    //Initialize peripherals related to the encoder 
+
+    //Software peripheral initialization. Note not all sensors require this step
     windvane_init(); // This is needed because of the semaphores unfortunately. DON'T COMMENT OUT 
     setup_mpu6050(); // used for setup with the imu 
     setup_lis3mdl();
