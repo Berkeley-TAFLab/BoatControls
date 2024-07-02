@@ -43,5 +43,7 @@ const float lis3mdl_soft_iron_vals[3][3] = {
     {0.003 , 0.004 , 0.962}
 }; 
 
+//Values related to RF 433MHz transmission 
+#define RF_ID 0x01 // This value will change as more devices are added
 
 //Debugging variables to disable certain setup tasks or functions
