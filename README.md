@@ -28,4 +28,8 @@ I should also start trying to get a GUI up and running that would be pretty cool
 
 ## 7/1/24 
 Finally got the RH_ASK library to work. It seems that some modifications to the RH_ASK.cpp file are necessary. I was able to get a basic transmission going. Still need to implement the new 
-data protocol.
+data protocol. 
+
+## 7/9/24 
+Implemented some basic pingpong code for the RF module. Some issues with transmission that I think requires an antenna since the modules only work when they're super close together. Still 
+need to implement the new data protocol.
