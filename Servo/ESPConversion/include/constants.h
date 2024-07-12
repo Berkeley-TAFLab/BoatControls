@@ -49,5 +49,11 @@ const float lis3mdl_soft_iron_vals[3][3] = {
 #define CP_ID 0x00 //Value of the control panel ID
 #define RF_ID 0x01 // This value will change as more devices are added
 
+//Message types for the RF 433MHz transmissions. More may be added 
+#define SET_MODE 0x00 
+#define STEER_MSG 0x01
+#define POLL_STATUS 0x02 
+#define POLL_LAT 0x03 
+#define POLL_LONG 0x04 
 
 //Debugging variables to disable certain setup tasks or functions

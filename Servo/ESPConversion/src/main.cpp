@@ -71,6 +71,7 @@ void setup() {
 
 } 
 
+//Ignore this section. Because we are using RTOS we should never have to do anything here
 void loop() {
   // put your main code here, to run repeatedly: 
 
