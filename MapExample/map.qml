@@ -12,6 +12,10 @@ ApplicationWindow {
     Plugin {
         id: mapPlugin
         name: "osm"
+	PluginParameter{
+		name:"osm.mapping.custom.host"
+		value:"https://tile.openstreetmap.org/"
+	}
     }
 
     Map {
@@ -20,7 +24,8 @@ ApplicationWindow {
         plugin: mapPlugin
         center: QtPositioning.coordinate(59.91, 10.75) // Oslo
         zoomLevel: 14
-        property geoCoordinate startCentroid
+        property geoCoordinate startCentroid 
+	activeMapType: map.supportedMapTypes[map.supportedMapTypes.length - 1]
 
         PinchHandler {
             id: pinch
