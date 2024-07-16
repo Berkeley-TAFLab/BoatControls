@@ -33,3 +33,6 @@ data protocol.
 ## 7/9/24 
 Implemented some basic pingpong code for the RF module. Some issues with transmission that I think requires an antenna since the modules only work when they're super close together. Still 
 need to implement the new data protocol.
+
+## 7/15/24
+Been learning how to use Qt to design a UI. Implemented a map which we can use to plot boats. Still need to add a table to the left to display all important information regarding the boats
