@@ -36,3 +36,8 @@ need to implement the new data protocol.
 
 ## 7/15/24
 Been learning how to use Qt to design a UI. Implemented a map which we can use to plot boats. Still need to add a table to the left to display all important information regarding the boats
+
+## 7/16/24 
+Finished initial layout of UI. Split UI into a few QML components so they can be developed independently. Still need 
+To add a Controlbar and a table to view data but there is a map which is kind of cool
+
