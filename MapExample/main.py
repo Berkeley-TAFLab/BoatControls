@@ -7,7 +7,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     engine = QQmlApplicationEngine()
-    engine.load(QUrl("map.qml"))
+    engine.load(QUrl("main_ui.qml"))
 
     if not engine.rootObjects():
         sys.exit(-1)

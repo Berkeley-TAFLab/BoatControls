@@ -3,11 +3,13 @@ import QtQuick.Controls 2.15
 import QtLocation 5.15
 import QtPositioning 5.15
 
-ApplicationWindow {
-    visible: true
-    width: 800
-    height: 600
-    title: "Map Example" 
+Rectangle{
+    anchors{
+	top:parent.top
+        bottom: controlBar.top
+	right: parent.right	
+    }
+    width: parent.width * 2/3
 
     Plugin {
         id: mapPlugin
@@ -71,4 +73,3 @@ ApplicationWindow {
         }
     }
 }
-
