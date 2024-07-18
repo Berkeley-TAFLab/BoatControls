@@ -4,12 +4,7 @@ import QtLocation 5.15
 import QtPositioning 5.15
 
 Rectangle{
-    anchors{
-	top:parent.top
-        bottom: controlBar.top
-	right: parent.right	
-    }
-    width: parent.width * 2/3
+
 
     Plugin {
         id: mapPlugin
