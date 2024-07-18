@@ -2,11 +2,12 @@ import sys
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QSplitter
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtQuickWidgets import QQuickWidget
+from scrollable_table import ScrollableTableWidget 
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Three Widget Layout with Splitters")
+        self.setWindowTitle("TAFLab Boat Control UI")
         self.setGeometry(100, 100, 600, 400)
 
         # Create main layout
@@ -19,8 +20,7 @@ class MainWindow(QWidget):
         top_splitter = QSplitter(Qt.Horizontal)
 
         # Top left widget
-        top_left_widget = QWidget()
-        top_left_widget.setStyleSheet("background-color: lightblue;")
+        top_left_widget = ScrollableTableWidget()
         top_splitter.addWidget(top_left_widget)
 
         # Top right widget
