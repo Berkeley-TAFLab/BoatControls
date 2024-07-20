@@ -36,7 +36,7 @@ class UARTHandler(QThread):
                 if self.serial.in_waiting > 0:
                     message = self.serial.readline().decode('utf-8', errors='ignore').strip()
                     self.message_received.emit(message)
-            except serial.SerialException as e:
+            except (serial.SerialException, OSError) as e:
                 print(f"Serial error: {e}")
                 self.serial.close()
                 time.sleep(5)
