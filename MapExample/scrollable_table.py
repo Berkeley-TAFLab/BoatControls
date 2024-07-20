@@ -1,5 +1,6 @@
 import sys
 from PySide6.QtWidgets import QApplication, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt
 
 class ScrollableTableWidget(QWidget):
     def __init__(self, parent=None):
@@ -26,4 +27,8 @@ class ScrollableTableWidget(QWidget):
         layout.addWidget(self.table_widget)
         self.setLayout(layout)
 
+    def update_table(self, row, column, value):
+        if 0 <= row < self.table_widget.rowCount() and 0 <= column < self.table_widget.columnCount():
+            item = QTableWidgetItem(value)
+            self.table_widget.setItem(row, column, item)
 
