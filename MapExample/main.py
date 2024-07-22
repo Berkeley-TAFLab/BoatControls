@@ -108,14 +108,11 @@ class MainWindow(QMainWindow):
         # Parse the message and update the table
         parts = message.split()
         print("Parts: " + str(parts))
-        if len(parts) == 5:
+        if len(parts) == 2:
             try:
-                row = int(parts[1]) - 1
-                column = int(parts[3]) - 1
-                value = parts[4]
                 print("Received message and parsed. Update data")
                 if self.stacked_widget.currentIndex() == 0:  # Check if window1 is active
-                    self.table_widget.update_table(row, column, value)
+                    self.table_widget.update_table(parts)
             except ValueError:
                 print(f"Invalid data received: {message}")
 
