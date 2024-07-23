@@ -43,4 +43,5 @@ To add a Controlbar and a table to view data but there is a map which is kind of
 
 ## 7/22/24 
 Added UART support and ID support. From some basic testing it seems that adding rows to the table is actually a really expensive operation.
-Whoever touches this next, keep that in mind. Error handling needed for malformed data. Still need to add map functionality and the controlbar
+Whoever touches this next, keep that in mind. Error handling needed for malformed data. Controlbar has been added UI-wise but needs some logic to communicate via serial.
+Map plotting still not integrated
