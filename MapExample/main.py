@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, QThread, Signal, Slot, QUrl
 from PySide6.QtGui import QAction
 from PySide6.QtQuickWidgets import QQuickWidget
 from scrollable_table import ScrollableTableWidget
+from controlbar import ControlBar
 import serial
 import serial.tools.list_ports
 import time
@@ -140,8 +141,7 @@ class MainWindow(QMainWindow):
         main_splitter.addWidget(top_splitter)
 
         # Bottom widget
-        bottom_widget = QWidget()
-        bottom_widget.setStyleSheet("background-color: lightyellow;")
+        bottom_widget = ControlBar()
 
         # Add bottom widget to main splitter
         main_splitter.addWidget(bottom_widget)
