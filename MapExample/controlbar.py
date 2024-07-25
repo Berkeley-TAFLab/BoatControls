@@ -117,7 +117,7 @@ class ControlBar(QWidget):
 
     @Slot()
     def handle_toggle_switch(self,state):
-        if state == 2: 
+        if state == 2: #Originally supposed to be Qt.Checked but for some reason that doesn't work
             print("Transmitting")
             self.timer.start(50) # Transmit every 50 ms 
         else:
@@ -140,8 +140,4 @@ class ControlBar(QWidget):
 
         self.main_window.send_uart_message(data)
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    widget = DialWidget()
-    widget.show()
-    sys.exit(app.exec())
+
