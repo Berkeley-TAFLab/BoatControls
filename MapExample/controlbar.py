@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, QTimer
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import (
     QApplication, QWidget, QGridLayout, QDial, QLabel, QLineEdit, QVBoxLayout,
@@ -7,8 +7,11 @@ from PySide6.QtWidgets import (
 )
 
 class ControlBar(QWidget):
-    def __init__(self):
+    def __init__(self, main_window):
         super().__init__()
+
+        #We need to reference the main window in order to use the uart handler 
+        self.main_window = main_window
 
         # Create the dials
         self.dial1 = QDial()
@@ -41,6 +44,7 @@ class ControlBar(QWidget):
 
         # Create the toggle switch, dropdown menu, and line edits
         self.toggle_switch = QCheckBox("Transmit")
+        self.toggle_switch.stateChanged.connect(self.handle_toggle_switch)
 
         self.combo1 = QComboBox()
         self.combo1.addItems(["IDLE", "MANUAL", "AUTO"])
@@ -68,6 +72,10 @@ class ControlBar(QWidget):
         dial2_layout.addWidget(self.dial_label2)
         dial2_layout.addWidget(self.dial2)
         dial2_layout.addWidget(self.line_edit2)
+
+        #create a timer in order to transmit values via UART  every so often
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.transmit_values)
 
         # Control layout
         control_layout = QVBoxLayout()
@@ -106,6 +114,31 @@ class ControlBar(QWidget):
     def update_dial2(self):
         value = int(self.line_edit2.text())
         self.dial2.setValue(value)
+
+    @Slot()
+    def handle_toggle_switch(self,state):
+        if state == 2: 
+            print("Transmitting")
+            self.timer.start(50) # Transmit every 50 ms 
+        else:
+            print("Not Transmitting")
+            self.timer.stop()
+
+    @Slot()
+    def transmit_values(self):
+        dial1_value = self.dial1.value()
+        dial2_value = self.dial2.value()
+        toggle_value = self.toggle_switch.isChecked()
+        combo1_value = self.combo1.currentText()
+        line_edit3_value = self.line_edit3.text()
+        line_edit4_value = self.line_edit4.text()
+        line_edit5_value = self.line_edit5.text()
+
+        data = f'Dial1: {dial1_value}, Dial2: {dial2_value}, Toggle: {toggle_value}, ' \
+               f'Combo1: {combo1_value}, LineEdit1: {line_edit3_value}, ' \
+               f'LineEdit2: {line_edit4_value}, LineEdit3: {line_edit5_value}\n'
+
+        self.main_window.send_uart_message(data)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

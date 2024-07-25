@@ -117,6 +117,11 @@ class MainWindow(QMainWindow):
             except ValueError:
                 print(f"Invalid data received: {message}")
 
+    def send_uart_message(self, message):
+        print("Transmitting uart message")
+        if self.uart_handler and self.uart_handler.serial and self.uart_handler.serial.is_open:
+            self.uart_handler.serial.write(message.encode('utf-8'))        
+
     def create_window1(self):
         window = QWidget()
         layout = QVBoxLayout(window)
@@ -141,7 +146,7 @@ class MainWindow(QMainWindow):
         main_splitter.addWidget(top_splitter)
 
         # Bottom widget
-        bottom_widget = ControlBar()
+        bottom_widget = ControlBar(self)
 
         # Add bottom widget to main splitter
         main_splitter.addWidget(bottom_widget)
