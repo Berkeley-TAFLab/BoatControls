@@ -48,5 +48,6 @@ Map plotting still not integrated
 
 ## 7/24/24 
 Finished adding UART transmission from the GUI. Now I can probably work on the transmitter code and move back to the firmware. Map isn't done yet but for testing I would probably leave it out.
-Also as I work on the transmitter, it's probably necessary to restructure the strings that get sent to the microcontroller
+Also as I work on the transmitter, it's probably necessary to restructure the strings that get sent to the microcontroller. Some organizational changes were made to the repo such as renaming the 
+GUI folder and adding the TransmitterModule directory for future usage.
 
