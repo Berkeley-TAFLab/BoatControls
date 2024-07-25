@@ -45,3 +45,8 @@ To add a Controlbar and a table to view data but there is a map which is kind of
 Added UART support and ID support. From some basic testing it seems that adding rows to the table is actually a really expensive operation.
 Whoever touches this next, keep that in mind. Error handling needed for malformed data. Controlbar has been added UI-wise but needs some logic to communicate via serial.
 Map plotting still not integrated
+
+## 7/24/24 
+Finished adding UART transmission from the GUI. Now I can probably work on the transmitter code and move back to the firmware. Map isn't done yet but for testing I would probably leave it out.
+Also as I work on the transmitter, it's probably necessary to restructure the strings that get sent to the microcontroller
+
