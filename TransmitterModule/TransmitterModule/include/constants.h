@@ -1,0 +1,1 @@
+#define TEST_SERIAL_PRIO 0
