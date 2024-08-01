@@ -24,7 +24,7 @@ void water_detection_task(void* parameter){
         Serial.println(level); 
 
         //Delay task to every 100ms
-        vTaskDelay(100/portTICK_PERIOD_MS);
+        vTaskDelay(WATER_DETECTION_DELAY/portTICK_PERIOD_MS);
     }
 }
 
@@ -49,7 +49,7 @@ void steering_task(void* parameter){
         } 
 
         //Delay task to every 200ms
-        vTaskDelay(200/portTICK_PERIOD_MS);
+        vTaskDelay(STEERING_DELAY/portTICK_PERIOD_MS);
     }
 }
 
@@ -57,28 +57,16 @@ void user_input_task(void* parameter){
     //TODO: As of Jun 18, use the serial monitor, later upgrade to an Xbee.
     // Maybe this stuff should be triggered via interrupt later 
 
-    //As of Jun 27 This section should no longer use serial monitor
+    //As of Jun 27 This section should no longer use serial monitor 
+
+    //As of Jul 3 You should only be using the 433MHz radio. Eventually you
+    // might be able to switch to an xbee?
     while(1){
-        //   if (Serial.available() > 0) {
-        //     // read the incoming byte:
-        //     String receiveString = Serial.readString(); 
-        //     receiveString.trim(); 
-
-        //     if(receiveString.equalsIgnoreCase("manual")){
-        //         //Switch variable to manual control
-        //         transition(MANUAL);
-        //     }else if (receiveString.equalsIgnoreCase("auto")){
-        //         //Switch variable to autonomous control
-        //         transition(AUTO);
-        //     }
-
-        // }
-
 
         receive_rf433();
 
         //Delay task to every 500 ms
-        vTaskDelay(500/portTICK_PERIOD_MS);
+        vTaskDelay(USER_INPUT_DELAY/portTICK_PERIOD_MS);
 
     }
 

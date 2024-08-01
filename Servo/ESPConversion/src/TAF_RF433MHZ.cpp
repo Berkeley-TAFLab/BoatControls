@@ -14,6 +14,7 @@
 
 RH_ASK driver(2000, RF_433_RX_PIN, RF_433_TX_PIN); // bitrate, rx, tx, pttpin
 
+//Second parameter is the ID of the boat. If set incorrectly, it will not receive the message
 RHReliableDatagram manager(driver, 2); 
 
 uint8_t buf[RH_ASK_MAX_MESSAGE_LEN]; //You really shouldn't need this much data

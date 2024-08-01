@@ -51,3 +51,7 @@ Finished adding UART transmission from the GUI. Now I can probably work on the t
 Also as I work on the transmitter, it's probably necessary to restructure the strings that get sent to the microcontroller. Some organizational changes were made to the repo such as renaming the 
 GUI folder and adding the TransmitterModule directory for future usage.
 
+## 7/31/24
+Transmissions from boat to control panel now work. Need to flesh out the transmitter side code and the message protocol between the two. Also, I learned that the GUI only works on my Mac for some 
+reason and not the PC
+
