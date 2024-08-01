@@ -13,15 +13,15 @@ void setup() {
   main_setup(); 
   
   //Initialize water detection task
-  xTaskCreatePinnedToCore(
-    water_detection_task, 
-    "Water Detection",
-    1024, 
-    NULL,
-    WATER_DETECTION_PRIO,
-    NULL,
-    app_cpu
-  );
+  // xTaskCreatePinnedToCore(
+  //   water_detection_task, 
+  //   "Water Detection",
+  //   1024, 
+  //   NULL,
+  //   WATER_DETECTION_PRIO,
+  //   NULL,
+  //   app_cpu
+  // );
 
     //Initialize Intialize User Input Task
   xTaskCreatePinnedToCore(
@@ -35,36 +35,36 @@ void setup() {
   );
 
   //Initialize Intialize Steering Task
-  xTaskCreatePinnedToCore(
-    steering_task, 
-    "Steering",
-    1024, 
-    NULL,
-    STEERING_PRIO,
-    NULL,
-    app_cpu
-  );
+  // xTaskCreatePinnedToCore(
+  //   steering_task, 
+  //   "Steering",
+  //   1024, 
+  //   NULL,
+  //   STEERING_PRIO,
+  //   NULL,
+  //   app_cpu
+  // );
 
-  xTaskCreatePinnedToCore(
-    sensor_readings_task,
-    "Sensors",
-    4096,
-    NULL,
-    SENSOR_READ_PRIO,
-    NULL,
-    app_cpu
-  );
+  // xTaskCreatePinnedToCore(
+  //   sensor_readings_task,
+  //   "Sensors",
+  //   4096,
+  //   NULL,
+  //   SENSOR_READ_PRIO,
+  //   NULL,
+  //   app_cpu
+  // );
 
   // Initialize Serial task
-  xTaskCreatePinnedToCore(
-    test_serial_task, 
-    "Test Task",
-    1024, 
-    NULL,
-    1,
-    NULL,
-    app_cpu
-  );
+  // xTaskCreatePinnedToCore(
+  //   test_serial_task, 
+  //   "Test Task",
+  //   1024, 
+  //   NULL,
+  //   1,
+  //   NULL,
+  //   app_cpu
+  // );
 
 
 

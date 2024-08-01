@@ -4,8 +4,8 @@
 #define SAIL_SERVO_PIN 13 
 #define TAIL_SERVO_PIN 7 //This needs to be redefined  
 
-#define RF_433_TX_PIN 39 //Transceiver pin for 433MHz transceiver module
-#define RF_433_RX_PIN 34 //Receiver pin for 433 MHz receiver module 
+#define RF_433_TX_PIN 25 //Transceiver pin for 433MHz transceiver module
+#define RF_433_RX_PIN 26 //Receiver pin for 433 MHz receiver module 
 
 #define GPS_RX_PIN 16 //From tx on gps to rx on esp32
 #define GPS_TX_PIN 17 //From Rx on esp32 to tx on gps but you can maybe disregard this entirely

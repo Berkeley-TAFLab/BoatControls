@@ -2,6 +2,7 @@
     Source file containing all functions and code related to the 433Mhz radio module
 */
 //Predefined libraries and headers
+#include <Arduino.h>
 #include <RHReliableDatagram.h>
 #include <RH_ASK.h>
 #include <SPI.h>
@@ -11,38 +12,12 @@
 #include "constants.h" 
 #include "Boat_SM.h"
 
-RH_ASK driver(2000, RF_433_RX_PIN, RF_433_TX_PIN, -1); // bitrate, rx, tx, pttpin
+RH_ASK driver(2000, RF_433_RX_PIN, RF_433_TX_PIN); // bitrate, rx, tx, pttpin
 
-RHReliableDatagram manager(driver, RF_ID); 
+RHReliableDatagram manager(driver, 2); 
 
 uint8_t buf[RH_ASK_MAX_MESSAGE_LEN]; //You really shouldn't need this much data
 
-void setup_rf433(){
-    if(!manager.init()){
-        Serial.println("Failed to init RF manager class.");
-    }
-} 
-
-
-void receive_rf433()
-{
-  if (manager.available())
-  {
-    // Wait for a message addressed to us from the client
-    uint8_t len = sizeof(buf);
-    uint8_t recipient;
-    if (manager.recvfromAck(buf, &len, &recipient))
-    {
-      //debug message to test if radio module works.
-      test_message(recipient); 
-
-      //Only if the ID matches will we parse the message
-      if(recipient == RF_ID){
-
-      }
-    }
-  }
-} 
 
 /*
   THE FUNCTIONS DEFINED BELOW ARE SPECIFIC TO PARSING MESSAGES AND SHOULDN'T
@@ -60,7 +35,7 @@ void test_message(uint8_t recipient){
   Serial.println((char*)buf);
 
   // Send a reply back to the control panel
-  if (!manager.sendtoWait(data, sizeof(data), CP_ID))
+  if (!manager.sendtoWait(data, sizeof(data), 1))
      Serial.println("sendtoWait failed");
 }
 
@@ -117,3 +92,36 @@ void poll_long(){
 
   }
 }
+
+/*
+  THE FUNCTIONS DEFINED BELOW ARE USED IN RECEIVING MESSAGES AND SETITNG UP 
+  THE 433MHZ RADIO MODULES. THEY MAY BE REFERENCED OUTSIDE OF THIS FILE
+*/
+
+
+void setup_rf433(){
+
+    if(!manager.init()){
+        Serial.println("Failed to init RF manager class.");
+    }else{
+      Serial.println("Initialized RF Manager");
+    }
+} 
+
+
+void receive_rf433()
+{
+  Serial.println("Attempting to Receive");
+  if (manager.available())
+  {
+    // Wait for a message addressed to us from the client
+    uint8_t len = sizeof(buf);
+    uint8_t recipient;
+    if (manager.recvfromAck(buf, &len, &recipient))
+    {
+      //debug message to test if radio module works.
+      test_message(recipient); 
+
+    }
+  }
+} 

@@ -10,6 +10,7 @@
 #include "TAF_MPU6050.h"
 #include "TAF_LIS3MDL.h"
 #include "TAF_GTU7.h"
+#include "TAF_RF433MHZ.h"
 
 //Private user defines. These will likely be used by sensors in their respective source files
 HardwareSerial Gps_Serial(1); //Variable used by the GPS
@@ -45,7 +46,7 @@ void steering_task(void* parameter){
             default:
                 Serial.println("Unknown Command...");
                 break; 
-        }
+        } 
 
         //Delay task to every 200ms
         vTaskDelay(200/portTICK_PERIOD_MS);
@@ -58,20 +59,23 @@ void user_input_task(void* parameter){
 
     //As of Jun 27 This section should no longer use serial monitor
     while(1){
-          if (Serial.available() > 0) {
-            // read the incoming byte:
-            String receiveString = Serial.readString(); 
-            receiveString.trim(); 
+        //   if (Serial.available() > 0) {
+        //     // read the incoming byte:
+        //     String receiveString = Serial.readString(); 
+        //     receiveString.trim(); 
 
-            if(receiveString.equalsIgnoreCase("manual")){
-                //Switch variable to manual control
-                transition(MANUAL);
-            }else if (receiveString.equalsIgnoreCase("auto")){
-                //Switch variable to autonomous control
-                transition(AUTO);
-            }
+        //     if(receiveString.equalsIgnoreCase("manual")){
+        //         //Switch variable to manual control
+        //         transition(MANUAL);
+        //     }else if (receiveString.equalsIgnoreCase("auto")){
+        //         //Switch variable to autonomous control
+        //         transition(AUTO);
+        //     }
 
-        }
+        // }
+
+
+        receive_rf433();
 
         //Delay task to every 500 ms
         vTaskDelay(500/portTICK_PERIOD_MS);
@@ -126,6 +130,7 @@ void main_setup(){
     windvane_init(); // This is needed because of the semaphores unfortunately. DON'T COMMENT OUT 
     setup_mpu6050(); // used for setup with the imu 
     setup_lis3mdl();
+    setup_rf433();
     
     //Initialize the state machine before doing anything
     sm_init();

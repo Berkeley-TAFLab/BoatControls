@@ -5,7 +5,7 @@
         3. Autonomous 
 */
 
-
+#include <Arduino.h>
 //User defined libraries and headers
 #include "Boat_SM.h"
 
@@ -17,6 +17,7 @@ SM_States curr_state;
 void sm_init(){
     //Should we start in idle or some steering mode 
     curr_state = IDLE; 
+    Serial.println("Finished initializing state machine");
 }
 
 void transition(SM_States next_state){ 
