@@ -3,8 +3,10 @@
 
 //User defined libraries and headers
 #include "TAF_Transmitter_Main.h" 
+#include "constants.h"
 
 void main_setup(){
+    Serial.begin(BAUD_RATE);
 
 } 
 

@@ -1,1 +1,2 @@
 #define TEST_SERIAL_PRIO 0
+#define BAUD_RATE 9600
