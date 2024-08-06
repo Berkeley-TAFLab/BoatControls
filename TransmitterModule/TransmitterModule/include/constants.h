@@ -1,2 +1,5 @@
 #define TEST_SERIAL_PRIO 0
 #define BAUD_RATE 9600
+
+#define RF_433_RX_PIN 16
+#define RF_433_TX_PIN 17

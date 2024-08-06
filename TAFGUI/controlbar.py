@@ -14,64 +14,64 @@ class ControlBar(QWidget):
         self.main_window = main_window
 
         # Create the dials
-        self.dial1 = QDial()
-        self.dial1.setRange(0, 100)
-        self.dial1.setValue(50)
-        self.dial1.valueChanged.connect(self.update_line_edit1)
+        self.sail_dial = QDial()
+        self.sail_dial.setRange(0, 180)
+        self.sail_dial.setValue(90)
+        self.sail_dial.valueChanged.connect(self.update_sail_disp_val)
 
-        self.dial2 = QDial()
-        self.dial2.setRange(0, 100)
-        self.dial2.setValue(50)
-        self.dial2.valueChanged.connect(self.update_line_edit2)
+        self.rudder_dial = QDial()
+        self.rudder_dial.setRange(0, 180)
+        self.rudder_dial.setValue(90)
+        self.rudder_dial.valueChanged.connect(self.update_rudder_disp_val)
 
         # Create the value line edits
-        self.line_edit1 = QLineEdit("50")
-        self.line_edit1.setAlignment(Qt.AlignCenter)
-        self.line_edit1.setValidator(QIntValidator(0, 100))
-        self.line_edit1.editingFinished.connect(self.update_dial1)
+        self.sail_disp_val = QLineEdit("90")
+        self.sail_disp_val.setAlignment(Qt.AlignCenter)
+        self.sail_disp_val.setValidator(QIntValidator(0, 180))
+        self.sail_disp_val.editingFinished.connect(self.update_sail_val)
 
-        self.line_edit2 = QLineEdit("50")
-        self.line_edit2.setAlignment(Qt.AlignCenter)
-        self.line_edit2.setValidator(QIntValidator(0, 100))
-        self.line_edit2.editingFinished.connect(self.update_dial2)
+        self.rudder_disp_val = QLineEdit("90")
+        self.rudder_disp_val.setAlignment(Qt.AlignCenter)
+        self.rudder_disp_val.setValidator(QIntValidator(0, 180))
+        self.rudder_disp_val.editingFinished.connect(self.update_rudder_val)
 
         # Create the dial labels
-        self.dial_label1 = QLabel("Sail Control")
-        self.dial_label1.setAlignment(Qt.AlignCenter)
+        self.sail_dial_label = QLabel("Sail Control")
+        self.sail_dial_label.setAlignment(Qt.AlignCenter)
 
-        self.dial_label2 = QLabel("Rudder Control")
-        self.dial_label2.setAlignment(Qt.AlignCenter)
+        self.rudder_dial_label = QLabel("Rudder Control")
+        self.rudder_dial_label.setAlignment(Qt.AlignCenter)
 
         # Create the toggle switch, dropdown menu, and line edits
-        self.toggle_switch = QCheckBox("Transmit")
-        self.toggle_switch.stateChanged.connect(self.handle_toggle_switch)
+        self.transmit_switch = QCheckBox("Transmit")
+        self.transmit_switch.stateChanged.connect(self.handle_transmit_switch)
 
-        self.combo1 = QComboBox()
-        self.combo1.addItems(["IDLE", "MANUAL", "AUTO"])
+        self.mode_select = QComboBox()
+        self.mode_select.addItems(["IDLE", "MANUAL", "AUTO"])
         
-        self.line_edit3 = QLineEdit("ID 0x00")
-        self.line_edit3.setAlignment(Qt.AlignCenter)
+        self.id_select = QLineEdit("0x00")
+        self.id_select.setAlignment(Qt.AlignCenter)
 
-        self.line_edit4 = QLineEdit("0.000")
-        self.line_edit4.setAlignment(Qt.AlignCenter)
+        self.longitude_select = QLineEdit("0.000")
+        self.longitude_select.setAlignment(Qt.AlignCenter)
 
-        self.line_edit5 = QLineEdit("0.000")
-        self.line_edit5.setAlignment(Qt.AlignCenter)
+        self.latitude_select = QLineEdit("0.000")
+        self.latitude_select.setAlignment(Qt.AlignCenter)
 
         # Set up the layout
         layout = QGridLayout()
 
         # First dial section
-        dial1_layout = QVBoxLayout()
-        dial1_layout.addWidget(self.dial_label1)
-        dial1_layout.addWidget(self.dial1)
-        dial1_layout.addWidget(self.line_edit1)
+        sail_dial_layout = QVBoxLayout()
+        sail_dial_layout.addWidget(self.sail_dial_label)
+        sail_dial_layout.addWidget(self.sail_dial)
+        sail_dial_layout.addWidget(self.sail_disp_val)
         
         # Second dial section
-        dial2_layout = QVBoxLayout()
-        dial2_layout.addWidget(self.dial_label2)
-        dial2_layout.addWidget(self.dial2)
-        dial2_layout.addWidget(self.line_edit2)
+        rudder_dial_layout = QVBoxLayout()
+        rudder_dial_layout.addWidget(self.rudder_dial_label)
+        rudder_dial_layout.addWidget(self.rudder_dial)
+        rudder_dial_layout.addWidget(self.rudder_disp_val)
 
         #create a timer in order to transmit values via UART  every so often
         self.timer = QTimer(self)
@@ -79,44 +79,44 @@ class ControlBar(QWidget):
 
         # Control layout
         control_layout = QVBoxLayout()
-        control_layout.addWidget(self.toggle_switch)
+        control_layout.addWidget(self.transmit_switch)
         control_layout.addWidget(QLabel("Steer Mode"))
-        control_layout.addWidget(self.combo1)
+        control_layout.addWidget(self.mode_select)
         control_layout.addWidget(QLabel("Boat ID"))
-        control_layout.addWidget(self.line_edit3)
+        control_layout.addWidget(self.id_select)
         control_layout.addWidget(QLabel("Requested Longitude"))
-        control_layout.addWidget(self.line_edit4)
+        control_layout.addWidget(self.longitude_select)
         control_layout.addWidget(QLabel("Requested Latitude"))
-        control_layout.addWidget(self.line_edit5)
+        control_layout.addWidget(self.latitude_select)
 
         # Adding to main layout
-        layout.addLayout(dial1_layout, 0, 0)
-        layout.addLayout(dial2_layout, 0, 1)
+        layout.addLayout(sail_dial_layout, 0, 0)
+        layout.addLayout(rudder_dial_layout, 0, 1)
         layout.addLayout(control_layout, 0, 2)
 
         self.setLayout(layout)
         self.setWindowTitle("Dial Widget Example")
 
     @Slot()
-    def update_line_edit1(self, value):
-        self.line_edit1.setText(str(value))
+    def update_sail_disp_val(self, value):
+        self.sail_disp_val.setText(str(value))
 
     @Slot()
-    def update_line_edit2(self, value):
-        self.line_edit2.setText(str(value))
+    def update_rudder_disp_val(self, value):
+        self.rudder_disp_val.setText(str(value))
 
     @Slot()
-    def update_dial1(self):
-        value = int(self.line_edit1.text())
-        self.dial1.setValue(value)
+    def update_sail_val(self):
+        value = int(self.sail_disp_val.text())
+        self.sail_dial.setValue(value)
 
     @Slot()
-    def update_dial2(self):
-        value = int(self.line_edit2.text())
-        self.dial2.setValue(value)
+    def update_rudder_val(self):
+        value = int(self.rudder_disp_val.text())
+        self.rudder_dial.setValue(value)
 
     @Slot()
-    def handle_toggle_switch(self,state):
+    def handle_transmit_switch(self,state):
         if state == 2: #Originally supposed to be Qt.Checked but for some reason that doesn't work
             print("Transmitting")
             self.timer.start(50) # Transmit every 50 ms 
@@ -126,17 +126,17 @@ class ControlBar(QWidget):
 
     @Slot()
     def transmit_values(self):
-        dial1_value = self.dial1.value()
-        dial2_value = self.dial2.value()
-        toggle_value = self.toggle_switch.isChecked()
-        combo1_value = self.combo1.currentText()
-        line_edit3_value = self.line_edit3.text()
-        line_edit4_value = self.line_edit4.text()
-        line_edit5_value = self.line_edit5.text()
+        sail_dial_value = self.sail_dial.value()
+        rudder_dial_value = self.rudder_dial.value()
+        transmit_value = self.transmit_switch.isChecked()
+        mode_value = self.mode_select.currentText()
+        id_value = self.id_select.text()
+        longitude_value = self.longitude_select.text()
+        latitude_value = self.latitude_select.text()
 
-        data = f'Dial1: {dial1_value}, Dial2: {dial2_value}, Toggle: {toggle_value}, ' \
-               f'Combo1: {combo1_value}, LineEdit1: {line_edit3_value}, ' \
-               f'LineEdit2: {line_edit4_value}, LineEdit3: {line_edit5_value}\n'
+        data = f'Sail: {sail_dial_value}, Rudder: {rudder_dial_value}, Transmit: {transmit_value}, ' \
+               f'Mode Select: {mode_value}, ID: {id_value}, ' \
+               f'Longitude: {longitude_value}, Latitude: {latitude_value}\n'
 
         self.main_window.send_uart_message(data)
 

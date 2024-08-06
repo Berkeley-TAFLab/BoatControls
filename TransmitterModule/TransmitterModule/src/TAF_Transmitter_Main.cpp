@@ -3,13 +3,27 @@
 
 //User defined libraries and headers
 #include "TAF_Transmitter_Main.h" 
-#include "constants.h"
+#include "constants.h" 
 
 void main_setup(){
     Serial.begin(BAUD_RATE);
 
 } 
 
+//Since you can't transmit and receive wirelessly at the same time a mutex or semaphore should be used
+void receive_boat(){
+    while(1){
+
+
+    }
+}
+
+void transmit_boat(){
+    while(1){
+
+    }
+
+}
 
 //Receives UART messages from the host computer 
 void receive_UART(){
@@ -21,15 +35,5 @@ void transmit_UART(){
 
 } 
 
-void transmit_boat(){
 
-}
 
-//Testing task in order to ensure everything works
-void test_serial_task(void* parameter){
-    while(1){
-        //Add something here. Uncomment below if you want
-        // Serial.println("Hello World!");
-        vTaskDelay(1000/portTICK_PERIOD_MS);
-    }
-} 

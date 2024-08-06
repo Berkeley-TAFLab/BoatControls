@@ -67,7 +67,6 @@ void user_input_task(void* parameter){
 
         //Delay task to every 500 ms
         vTaskDelay(USER_INPUT_DELAY/portTICK_PERIOD_MS);
-
     }
 
 }
