@@ -1,5 +1,3 @@
-#include "TAF_ControllerSide_433Mhz.h" 
-
 /*
     Source file containing all functions and code related to the 433Mhz radio module
 */
@@ -10,6 +8,8 @@
 #include <SPI.h>
 
 //User defined libraries and headers
+#include "TAF_ControllerSide_433Mhz.h" 
+#include "TAF_GUI_UARTComm.h" //Include to pass through data to buffer
 #include "constants.h" 
 
 RH_ASK driver(2000, RF_433_RX_PIN, RF_433_TX_PIN); // bitrate, rx, tx, pttpin
@@ -17,14 +17,16 @@ RH_ASK driver(2000, RF_433_RX_PIN, RF_433_TX_PIN); // bitrate, rx, tx, pttpin
 //Second parameter is the ID of the boat. If set incorrectly, it will not receive the message
 RHReliableDatagram manager(driver, 2); 
 
-uint8_t buf[RH_ASK_MAX_MESSAGE_LEN]; //You really shouldn't need this much data
+uint8_t buf[MAX_MESSAGE_LENGTH]; //You really shouldn't need this much data
 
 
 /*
   THE FUNCTIONS DEFINED BELOW ARE SPECIFIC TO PARSING MESSAGES AND SHOULDN'T
   BE REFERENCED OUTSIDE OF THIS FILE.
 */
-
+void store_message(){
+    //This just stores the message in order for us to use it later
+}
 
 
 
@@ -58,6 +60,11 @@ void receive_rf433()
       //debug message to test if radio module works.
     //   test_message(recipient); 
 
+
     }
   }
 } 
+
+void transmit_uart(){
+
+}
