@@ -40,10 +40,25 @@ void receive_UART(){
 
     //Use a single while loop to receive messages in one go.
     while(Serial.available() > 0){
+
+        //Receive next byte from UART
         uint8_t incomingByte = Serial.read();
 
+        //Technically we shouldn't ever reach the end of the message but this 
+        //prevents buffer overflow
+        if(index < MAX_MESSAGE_LENGTH - 1){
+            gui_buf[index] = incomingByte;
+            index++;
+        }
+
+        //If we receive a newline, it should be the end of the message
+        if(incomingByte == '\n'){
+            gui_buf[index] = '\0';
+            return;
+        }
     }
 
+    return; //Redundant return. Maybe swap to a bool for safety.ß
 }
 
 //Transmits messages to the host computer
