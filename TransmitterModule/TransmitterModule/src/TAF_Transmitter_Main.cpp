@@ -6,7 +6,10 @@
 #include "TAF_ControllerSide_433Mhz.h"
 #include "constants.h"  
 
-uint8_t buf[MAX_MESSAGE_LENGTH];
+//User defined private variables
+uint8_t boat_buf[MAX_MESSAGE_LENGTH]; //Buffer used to store messages from the boats
+uint8_t gui_buf[MAX_MESSAGE_LENGTH]; //Buffer used to store messages from the GUI
+
 
 void main_setup(){
     Serial.begin(BAUD_RATE);
@@ -19,9 +22,8 @@ void main_setup(){
 //Since you can't transmit and receive wirelessly at the same time a mutex or semaphore should be used
 
 //Receive from the 433MHz radio module and store value 
-
 void receive_boat(){
-    receive_rf433(buf);
+    receive_rf433(boat_buf);
 }
 
 //Transmit the stored message from the uart receive through the 433MHz radio
@@ -32,10 +34,16 @@ void transmit_boat(){
 }
 
 //Receives UART messages from the host computer 
-void receive_UART(){
-    while(1){
-        //Receive UART messages from the GUI and store value
+void receive_UART(){ 
+    //Index used to store where we are in the gui_buf
+    int index = 0;
+
+    //Use a single while loop to receive messages in one go.
+    while(Serial.available() > 0){
+        uint8_t incomingByte = Serial.read();
+
     }
+
 }
 
 //Transmits messages to the host computer

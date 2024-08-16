@@ -4,7 +4,7 @@
 #define RF_433_RX_PIN 16
 #define RF_433_TX_PIN 17 
 
-#define MAX_MESSAGE_LENGTH 100 //To preserve memory, we can stick to a max of 100 bytes
+#define MAX_MESSAGE_LENGTH 20 //To preserve memory, we can stick to a max of 100 bytes
 
 #define RECEIVE_BOAT_DELAY 100
 
