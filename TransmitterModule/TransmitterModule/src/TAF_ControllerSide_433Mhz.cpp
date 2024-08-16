@@ -17,7 +17,6 @@ RH_ASK driver(2000, RF_433_RX_PIN, RF_433_TX_PIN); // bitrate, rx, tx, pttpin
 //Second parameter is the ID of the boat. If set incorrectly, it will not receive the message
 RHReliableDatagram manager(driver, 2); 
 
-uint8_t buf[MAX_MESSAGE_LENGTH]; //You really shouldn't need this much data
 
 
 /*
@@ -46,7 +45,7 @@ void setup_rf433(){
 } 
 
 
-void receive_rf433()
+void receive_rf433(uint8_t* buf)
 {
   //Debugging message to see if we enter the receive function or not 
   // Serial.println("Attempting to Receive");
@@ -56,9 +55,9 @@ void receive_rf433()
     uint8_t len = sizeof(buf);
     uint8_t recipient;
     if (manager.recvfromAck(buf, &len, &recipient))
-    {
-      //debug message to test if radio module works.
-    //   test_message(recipient); 
+    { 
+      Serial.print("Received From: ");
+      Serial.println(recipient,HEX);
 
 
     }

@@ -1,5 +1,7 @@
 void main_setup();
 
+//Receive transmissions from boat
+void receive_boat();
 
 //Receives UART messages from the host computer 
 void receive_UART();

@@ -6,4 +6,6 @@
 
 #define MAX_MESSAGE_LENGTH 100 //To preserve memory, we can stick to a max of 100 bytes
 
+#define RECEIVE_BOAT_DELAY 100
+
 #define CP_ID 0x00 //ID used for the control panel

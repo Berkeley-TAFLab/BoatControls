@@ -3,10 +3,16 @@
 
 //User defined libraries and headers
 #include "TAF_Transmitter_Main.h" 
-#include "constants.h" 
+#include "TAF_ControllerSide_433Mhz.h"
+#include "constants.h"  
+
+uint8_t buf[MAX_MESSAGE_LENGTH];
 
 void main_setup(){
     Serial.begin(BAUD_RATE);
+
+    //Call to setup the manager class for 433MHz radio
+    setup_rf433();
 
 } 
 
@@ -15,10 +21,7 @@ void main_setup(){
 //Receive from the 433MHz radio module and store value 
 
 void receive_boat(){
-    while(1){ 
-
-
-    }
+    receive_rf433(buf);
 }
 
 //Transmit the stored message from the uart receive through the 433MHz radio
