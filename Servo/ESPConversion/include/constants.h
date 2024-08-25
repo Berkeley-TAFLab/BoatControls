@@ -1,8 +1,8 @@
 //Dynamic Pin definitions, You may change these however you see fit 
 #define LED_PIN 2
 #define WATER_LEVEL_PIN 36 
-#define SAIL_SERVO_PIN 13 
-#define TAIL_SERVO_PIN 7 //This needs to be redefined  
+#define SAIL_SERVO_PIN 18
+#define TAIL_SERVO_PIN 19 //This needs to be redefined  
 
 #define RF_433_TX_PIN 25 //Transceiver pin for 433MHz transceiver module
 #define RF_433_RX_PIN 26 //Receiver pin for 433 MHz receiver module 

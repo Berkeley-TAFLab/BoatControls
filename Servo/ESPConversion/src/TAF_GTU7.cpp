@@ -26,12 +26,19 @@ void read_gtu7(){
         gps.encode(c);
     } 
 
-    //Update for more variables if necessary
+    //Update for more variables if necessary 
     if(gps.location.isUpdated()){
         gtu7_lat = gps.location.lat();
         gtu7_long = gps.location.lng();
         gtu7_alt = gps.altitude.meters();
         updated_val = true;
+    }
+
+    if (gps.location.isValid())
+    {
+        Serial.print(gps.location.lat(), 6);
+        Serial.print(F(","));
+        Serial.print(gps.location.lng(), 6);
     }
 }
 

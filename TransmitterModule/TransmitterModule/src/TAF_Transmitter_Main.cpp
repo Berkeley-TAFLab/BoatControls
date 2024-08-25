@@ -28,8 +28,7 @@ void receive_boat(){
 
 //Transmit the stored message from the uart receive through the 433MHz radio
 void transmit_boat(){
-    while(1){
-    }
+
 
 }
 
@@ -63,10 +62,7 @@ void receive_UART(){
 
 //Transmits messages to the host computer
 void transmit_UART(){
-    while(1){
 
-
-    }
 } 
 
 

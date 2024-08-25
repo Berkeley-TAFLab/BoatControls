@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <HardwareSerial.h>
+#include <ESP32Servo.h>
 
 //User defined libraries and headers
 #include "constants.h"
@@ -14,11 +15,15 @@
 
 //Private user defines. These will likely be used by sensors in their respective source files
 HardwareSerial Gps_Serial(1); //Variable used by the GPS
+Servo tailServo;
+Servo sailServo;
 
 //Detect if there's waterin the bottom of the boat, alert if so
 void water_detection_task(void* parameter){
     while(1){
         //TODO: implement alert if water level is too high
+
+        //From basic testing it seeems that anything greater than 2000 can probably be considered wet.
         int level = analogRead(WATER_LEVEL_PIN);
         Serial.print("Water Level: ");
         Serial.println(level); 
@@ -74,7 +79,8 @@ void user_input_task(void* parameter){
 //Collect readings from the imu, encoder, magnetometer,gps
 void sensor_readings_task(void* parameter){
     while(1){
-        // read_wind_vane();
+        read_wind_vane();
+        Serial.println(get_avg_angle());
         read_mpu6050();
         read_lis3mdl();
         read_gtu7(); 
@@ -90,9 +96,48 @@ void sensor_readings_task(void* parameter){
 //This task is primarily used in order to test that you're actually multithreading. 
 //Feel free to experiment with it 
 void test_serial_task(void* parameter){
+
+    int degrees = 0;
     while(1){
         //Add something here. Uncomment below if you want
-        // Serial.println("Hello World!");
+        // Serial.println("Hello World!"); 
+
+
+        //BELOW THIS IS AN I2C SCANNER
+        // byte error, address;
+        // int nDevices;
+
+        // Serial.println("Scanning...");
+
+        // nDevices = 0;
+        // for (address = 1; address < 127; address++) {
+        //     Wire.beginTransmission(address);        // Start I2C transmission to the device
+        //     error = Wire.endTransmission();         // End I2C transmission and get the error code
+
+        //     if (error == 0) {
+        //     Serial.print("I2C device found at address 0x");
+        //     if (address < 16)
+        //         Serial.print("0");  // Add leading zero for single digit addresses
+        //     Serial.println(address, HEX);
+        //     nDevices++;
+        //     } else if (error == 4) {
+        //     Serial.print("Unknown error at address 0x");
+        //     if (address < 16)
+        //         Serial.print("0");  // Add leading zero for single digit addresses
+        //     Serial.println(address, HEX);
+        //     }
+        // }
+
+        // if (nDevices == 0)
+        //     Serial.println("No I2C devices found\n");
+        // else
+        //     Serial.println("Done scanning\n");
+
+        int new_degree = degrees % 135;
+        sailServo.write(new_degree);
+        tailServo.write(new_degree);
+        degrees += 45;
+        
         vTaskDelay(1000/portTICK_PERIOD_MS);
     }
 } 
@@ -118,6 +163,8 @@ void main_setup(){
     setup_mpu6050(); // used for setup with the imu 
     setup_lis3mdl();
     setup_rf433();
+    sailServo.attach(SAIL_SERVO_PIN);
+    tailServo.attach(TAIL_SERVO_PIN);
     
     //Initialize the state machine before doing anything
     sm_init();

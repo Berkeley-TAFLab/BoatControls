@@ -24,15 +24,15 @@ void setup() {
   // );
 
     //Initialize Intialize User Input Task
-  xTaskCreatePinnedToCore(
-    user_input_task, 
-    "User Input",
-    1024, 
-    NULL,
-    USER_INPUT_PRIO,
-    NULL,
-    app_cpu
-  );
+  // xTaskCreatePinnedToCore(
+  //   user_input_task, 
+  //   "User Input",
+  //   1024, 
+  //   NULL,
+  //   USER_INPUT_PRIO,
+  //   NULL,
+  //   app_cpu
+  // );
 
   //Initialize Intialize Steering Task
   // xTaskCreatePinnedToCore(
@@ -45,26 +45,26 @@ void setup() {
   //   app_cpu
   // );
 
-  // xTaskCreatePinnedToCore(
-  //   sensor_readings_task,
-  //   "Sensors",
-  //   4096,
-  //   NULL,
-  //   SENSOR_READ_PRIO,
-  //   NULL,
-  //   app_cpu
-  // );
+  xTaskCreatePinnedToCore(
+    sensor_readings_task,
+    "Sensors",
+    4096,
+    NULL,
+    SENSOR_READ_PRIO,
+    NULL,
+    app_cpu
+  );
 
   // Initialize Serial task
-  // xTaskCreatePinnedToCore(
-  //   test_serial_task, 
-  //   "Test Task",
-  //   1024, 
-  //   NULL,
-  //   1,
-  //   NULL,
-  //   app_cpu
-  // );
+  xTaskCreatePinnedToCore(
+    test_serial_task, 
+    "Test Task",
+    4096, 
+    NULL,
+    1,
+    NULL,
+    app_cpu
+  );
 
 
 
