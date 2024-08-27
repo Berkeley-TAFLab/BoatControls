@@ -19,8 +19,14 @@ void setup() {
 */
 
 void loop() {
-  receive_boat();
-  receive_UART();
+
+  // These functions represent step 1 and 2 
+  receive_from_boat();
+  receive_from_user(); 
+
+  //These function represent steps 3 and 4
+  transmit_to_boat();
+  transmit_to_user();
 
 
 }

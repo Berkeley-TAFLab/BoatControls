@@ -13,15 +13,15 @@ void setup() {
   main_setup(); 
   
   //Initialize water detection task
-  // xTaskCreatePinnedToCore(
-  //   water_detection_task, 
-  //   "Water Detection",
-  //   1024, 
-  //   NULL,
-  //   WATER_DETECTION_PRIO,
-  //   NULL,
-  //   app_cpu
-  // );
+  xTaskCreatePinnedToCore(
+    water_detection_task, 
+    "Water Detection",
+    1024, 
+    NULL,
+    WATER_DETECTION_PRIO,
+    NULL,
+    app_cpu
+  );
 
     //Initialize Intialize User Input Task
   // xTaskCreatePinnedToCore(

@@ -9,7 +9,6 @@
 
 //User defined libraries and headers
 #include "TAF_ControllerSide_433Mhz.h" 
-#include "TAF_GUI_UARTComm.h" //Include to pass through data to buffer
 #include "constants.h" 
 
 RH_ASK driver(2000, RF_433_RX_PIN, RF_433_TX_PIN); // bitrate, rx, tx, pttpin
@@ -18,23 +17,10 @@ RH_ASK driver(2000, RF_433_RX_PIN, RF_433_TX_PIN); // bitrate, rx, tx, pttpin
 RHReliableDatagram manager(driver, 2); 
 
 
-
-/*
-  THE FUNCTIONS DEFINED BELOW ARE SPECIFIC TO PARSING MESSAGES AND SHOULDN'T
-  BE REFERENCED OUTSIDE OF THIS FILE.
-*/
-void store_message(){
-    //This just stores the message in order for us to use it later
-}
-
-
-
 /*
   THE FUNCTIONS DEFINED BELOW ARE USED IN RECEIVING MESSAGES AND SETITNG UP 
   THE 433MHZ RADIO MODULES. THEY MAY BE REFERENCED OUTSIDE OF THIS FILE
 */
-
-
 void setup_rf433(){
 
     if(!manager.init()){
@@ -44,26 +30,39 @@ void setup_rf433(){
     }
 } 
 
-
-void receive_rf433(uint8_t* buf)
+//Receive message via radio module
+bool receive_rf433(uint8_t* buf)
 {
   //Debugging message to see if we enter the receive function or not 
   // Serial.println("Attempting to Receive");
   if (manager.available())
   {
     // Wait for a message addressed to us from the client
-    uint8_t len = sizeof(buf);
+    uint8_t len = MAX_MESSAGE_LENGTH;
     uint8_t recipient;
     if (manager.recvfromAck(buf, &len, &recipient))
     { 
-      Serial.print("Received From: ");
-      Serial.println(recipient,HEX);
-
-
+      return true;
     }
   }
+
+  return false;
+}  
+
+//Transmit a message through the radio module
+void transmit_rf433(uint8_t* buf){
+
+  uint8_t from = buf[0];
+
+  if (!manager.sendtoWait(buf+1, MAX_MESSAGE_LENGTH - 1, from))
+    Serial.println("sendtoWait failed");
+
+  //Unimplemented for now
+  // Serial.print("Data received: ");
+  // for (size_t i = 0; i < 8; i++) {
+  //   Serial.print(buf[i], HEX);  // Print each byte in hexadecimal format
+  //   Serial.print(" ");          // Add a space between bytes
+  // }
+  // Serial.println();  // Print a new line after printing all bytes
+
 } 
-
-void transmit_uart(){
-
-}
