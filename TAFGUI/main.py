@@ -12,7 +12,7 @@ import time
 
 
 class UARTHandler(QThread):
-    message_received = Signal(str)
+    message_received = Signal(bytes)
 
     def __init__(self, port, baud_rate):
         super().__init__()
@@ -20,13 +20,14 @@ class UARTHandler(QThread):
         self.baud_rate = baud_rate
         self.running = True
         self.serial = None
+        self.buffer = bytearray()
 
     def run(self):
         print("Attempting to receive data")
         while self.running:
             if not self.serial or not self.serial.is_open:
                 try:
-                    self.serial = serial.Serial(self.port, self.baud_rate)
+                    self.serial = serial.Serial(self.port, self.baud_rate, timeout=0.1)
                     print(f"Connected to {self.port}")
                 except serial.SerialException as e:
                     print(f"Error opening serial port: {e}")
@@ -35,8 +36,16 @@ class UARTHandler(QThread):
 
             try:
                 if self.serial.in_waiting > 0:
-                    message = self.serial.readline().decode('utf-8', errors='ignore').strip()
-                    self.message_received.emit(message)
+                    chunk = self.serial.read(self.serial.in_waiting)
+                    self.buffer.extend(chunk)
+                    
+                    while b'\n' in self.buffer:
+                        message, self.buffer = self.buffer.split(b'\n', 1)
+                        if len(message) >= 2:  # Ensure we have at least ID and Data bytes
+                            self.message_received.emit(message)
+                        else:
+                            print(f"Received incomplete message: {message.hex()}")
+                        
             except (serial.SerialException, OSError) as e:
                 print(f"Serial error: {e}")
                 self.serial.close()
@@ -46,6 +55,7 @@ class UARTHandler(QThread):
         self.running = False
         if self.serial and self.serial.is_open:
             self.serial.close()
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -106,16 +116,34 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def process_serial_message(self, message):
-        # Parse the message and update the table
-        parts = message.split()
-        print("Parts: " + str(parts))
-        if len(parts) == 2:
-            try:
-                print("Received message and parsed. Update data")
-                if self.stacked_widget.currentIndex() == 0:  # Check if window1 is active
-                    self.table_widget.update_table(parts)
-            except ValueError:
-                print(f"Invalid data received: {message}")
+        print(f"Received raw message: {message.hex()}")
+        
+        if len(message) >= 2:
+            id_byte = message[0]
+            data_byte = message[1]
+            print(f"Received ID byte: 0x{id_byte:02X}, Data byte: 0x{data_byte:02X}")
+
+            # Special check for 0x04 and 0x09
+            if id_byte == 0x04 and data_byte == 0x09:
+                print("Detected special case: 0x04 0x09")
+
+            # Update table if window1 is active
+            if self.stacked_widget.currentIndex() == 0:
+                self.table_widget.update_table([id_byte, data_byte])
+
+            # Process any additional bytes in the message
+            if len(message) > 2:
+                print(f"Additional data: {message[2:].hex()}")
+        else:
+            print(f"Incomplete message received: {message.hex()}")
+
+    def send_uart_message(self, message):
+        print("Transmitting uart message")
+        if self.uart_handler and self.uart_handler.serial and self.uart_handler.serial.is_open:
+            # Ensure the message ends with a newline
+            if not message.endswith('\n'):
+                message += '\n'
+            self.uart_handler.serial.write(message.encode('utf-8'))
 
     def send_uart_message(self, message):
         print("Transmitting uart message")
