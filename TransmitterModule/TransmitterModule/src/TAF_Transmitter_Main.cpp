@@ -39,32 +39,22 @@ void transmit_to_boat(){
 
 //Receives UART messages from the host computer 
 void receive_from_user(){ 
-    //Index used to store where we are in the gui_buf
-    int index = 0; 
-    uart_receive_flag = false;
+    uart_receive_flag = false;  // Reset the flag initially
 
-    //Use a single while loop to receive messages in one go.
-    while(Serial.available() > 0){
+    // Read the incoming message until a newline character is received
+    String input = Serial.readStringUntil('\n');
 
-        //Receive next byte from UART
-        uint8_t incomingByte = Serial.read();
+    // Check if the input is non-empty and does not exceed buffer size
+    if (input.length() > 0 && input.length() < MAX_MESSAGE_LENGTH) {
+        // Copy the input message to the gui_buf
+        input.getBytes(gui_buf, MAX_MESSAGE_LENGTH);
 
-        //Technically we shouldn't ever reach the end of the message but this 
-        //prevents buffer overflow
-        if(index < MAX_MESSAGE_LENGTH - 1){
-            gui_buf[index] = incomingByte;
-            index++;
-        }
+        uart_receive_flag = true;  // Set flag indicating a message has been received
 
-        //If we receive a newline, it should be the end of the message
-        if(incomingByte == '\n'){
-            gui_buf[index] = '\0';
-            return;
-        }
-        uart_receive_flag = true;
+        // Debugging output to verify the received message
+        Serial.print("Received from user: ");
+        Serial.println(input);  // Print the received message as a string
     }
-
-    return; //Redundant return. Maybe swap to a bool for safety.ß
 }
 
 //Transmits messages to the host computer via UART

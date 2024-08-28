@@ -11,7 +11,7 @@
 #include "TAF_ControllerSide_433Mhz.h" 
 #include "constants.h" 
 
-RH_ASK driver(2000, RF_433_RX_PIN, RF_433_TX_PIN); // bitrate, rx, tx, pttpin
+RH_ASK driver(5000, RF_433_RX_PIN, RF_433_TX_PIN); // bitrate, rx, tx, pttpin
 
 //Second parameter is the ID of the boat. If set incorrectly, it will not receive the message
 RHReliableDatagram manager(driver, 2); 
@@ -53,8 +53,8 @@ bool receive_rf433(uint8_t* buf)
 void transmit_rf433(uint8_t* buf){
 
   uint8_t from = buf[0];
-
-  if (!manager.sendtoWait(buf+1, MAX_MESSAGE_LENGTH - 1, from))
+  uint8_t* trans_data = buf + 1;
+  if (!manager.sendtoWait(trans_data, strlen((char*)trans_data), from))
     Serial.println("sendtoWait failed");
 
   //Unimplemented for now

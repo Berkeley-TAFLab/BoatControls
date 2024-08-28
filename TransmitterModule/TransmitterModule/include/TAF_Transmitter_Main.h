@@ -9,6 +9,7 @@ void receive_from_user();
 //Transmits messages to the host computer
 void transmit_to_user();
 
+//Transmit messages to the boat
 void transmit_to_boat();
 
 //Testing task in order to ensure everything works
