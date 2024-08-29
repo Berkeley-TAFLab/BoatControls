@@ -39,8 +39,8 @@ class UARTHandler(QThread):
                     chunk = self.serial.read(self.serial.in_waiting)
                     self.buffer.extend(chunk)
                     
-                    while b'\n' in self.buffer:
-                        message, self.buffer = self.buffer.split(b'\n', 1)
+                    while b'\n\n\n' in self.buffer:
+                        message, self.buffer = self.buffer.split(b'\n\n\n', 1)
                         if len(message) >= 2:  # Ensure we have at least ID and Data bytes
                             self.message_received.emit(message)
                         else:

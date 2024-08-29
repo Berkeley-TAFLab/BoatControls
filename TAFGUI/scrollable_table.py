@@ -9,10 +9,10 @@ class ScrollableTableWidget(QWidget):
 
         self.table_widget = QTableWidget()
         self.table_widget.setRowCount(0)  # Set number of rows
-        self.table_widget.setColumnCount(5)  # Set number of columns
+        self.table_widget.setColumnCount(6)  # Set number of columns
 
         # Set headers
-        self.table_widget.setHorizontalHeaderLabels(["ID", "Timestamp", "Column 3", "Column 4", "Column 5"])
+        self.table_widget.setHorizontalHeaderLabels(["ID", "Timestamp", "Status", "Longitude", "Latitude","Heading"])
 
         # Add data to the table
         for row in range(10):
@@ -37,9 +37,6 @@ class ScrollableTableWidget(QWidget):
         message_type = data[1]
         parsed_data = data[2]
 
-
-
-
         #initially set the index to the very last row just in case
         index = self.row_nums
 
@@ -54,15 +51,39 @@ class ScrollableTableWidget(QWidget):
             self.table_widget.setRowCount(self.row_nums) #add the new row into the tablem
             self.table_widget.setItem(index, 0, QTableWidgetItem(f"{parsed_id}")) #set the id in the new row
 
+        #Indices 
+            # 0 - ID 
+            # 1 - Timestamp 
+            # 2 - Status 
+            # 3 - Longitude 
+            # 4 - Latitude 
+            # 5 - Heading
 
-        match message_type:
+        match message_type: 
+            #Receive Status
             case 0x08:
+                self.table_widget.setItem(index, 2, QTableWidgetItem(f"{parsed_data[0]}"))
+
+            #Receive Longitude
+            case 0x09: 
                 parsed_data.reverse();
                 float_value = struct.unpack('!f', parsed_data)[0]
                 print(f"Float value: {float_value}") 
-                self.table_widget.setItem(index, 1, QTableWidgetItem(f"{float_value:.5f}"))
-            case 0x07:
-                self.table_widget.setItem(index, 1, QTableWidgetItem(f"{parsed_data[0]}"))
+                self.table_widget.setItem(index, 3, QTableWidgetItem(f"{float_value:.5f}"))
+            
+            #Receive Latitude
+            case 0x0A: 
+                parsed_data.reverse();
+                float_value = struct.unpack('!f', parsed_data)[0]
+                print(f"Float value: {float_value}") 
+                self.table_widget.setItem(index, 4, QTableWidgetItem(f"{float_value:.5f}"))
+            
+            #Receive Heading
+            case 0x0B: 
+                parsed_data.reverse();
+                float_value = struct.unpack('!f', parsed_data)[0]
+                print(f"Float value: {float_value}") 
+                self.table_widget.setItem(index, 5, QTableWidgetItem(f"{float_value:.5f}"))
 
 
             
