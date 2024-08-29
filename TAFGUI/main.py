@@ -119,21 +119,19 @@ class MainWindow(QMainWindow):
         print(f"Received raw message: {message.hex()}")
         
         if len(message) >= 2:
-            id_byte = message[0]
-            data_byte = message[1]
-            print(f"Received ID byte: 0x{id_byte:02X}, Data byte: 0x{data_byte:02X}")
+            id_byte = message[0] 
+            message_type = message[1] 
+            data_bytes = message[2:]
 
-            # Special check for 0x04 and 0x09
-            if id_byte == 0x04 and data_byte == 0x09:
-                print("Detected special case: 0x04 0x09")
+            data_bytes_hex = ' '.join(f"0x{byte:02X}" for byte in data_bytes)
+
+            print(f"Received ID byte: 0x{id_byte:02X}, Message Type: 0x{message_type:02X} Data bytes: {data_bytes_hex}")
+
 
             # Update table if window1 is active
             if self.stacked_widget.currentIndex() == 0:
-                self.table_widget.update_table([id_byte, data_byte])
+                self.table_widget.update_table([id_byte, message_type, data_bytes])
 
-            # Process any additional bytes in the message
-            if len(message) > 2:
-                print(f"Additional data: {message[2:].hex()}")
         else:
             print(f"Incomplete message received: {message.hex()}")
 

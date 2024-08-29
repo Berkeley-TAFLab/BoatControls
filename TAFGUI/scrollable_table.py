@@ -1,4 +1,5 @@
 import sys
+import struct
 from PySide6.QtWidgets import QApplication, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 from PySide6.QtCore import Qt
 
@@ -32,8 +33,12 @@ class ScrollableTableWidget(QWidget):
 
     def update_table(self,data):
         #Parse data from the data array
-        parsed_id = data[0] 
-        parsed_timestamp = data[1]
+        parsed_id = data[0]   
+        message_type = data[1]
+        parsed_data = data[2]
+
+
+
 
         #initially set the index to the very last row just in case
         index = self.row_nums
@@ -49,5 +54,13 @@ class ScrollableTableWidget(QWidget):
             self.table_widget.setRowCount(self.row_nums) #add the new row into the tablem
             self.table_widget.setItem(index, 0, QTableWidgetItem(f"{parsed_id}")) #set the id in the new row
 
-        self.table_widget.setItem(index, 1, QTableWidgetItem(f"{parsed_timestamp}"))
+        print(message_type == 0x08)
+        if message_type == 0x08:
+            # This is a float message
+            parsed_data.reverse();
+            float_value = struct.unpack('!f', parsed_data)[0]
+            print(f"Float value: {float_value}") 
+            self.table_widget.setItem(index, 1, QTableWidgetItem(f"{float_value:.5f}"))
+
+
 
