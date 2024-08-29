@@ -54,13 +54,22 @@ class ScrollableTableWidget(QWidget):
             self.table_widget.setRowCount(self.row_nums) #add the new row into the tablem
             self.table_widget.setItem(index, 0, QTableWidgetItem(f"{parsed_id}")) #set the id in the new row
 
-        print(message_type == 0x08)
-        if message_type == 0x08:
+        if message_type == 0x08: 
             # This is a float message
             parsed_data.reverse();
             float_value = struct.unpack('!f', parsed_data)[0]
             print(f"Float value: {float_value}") 
             self.table_widget.setItem(index, 1, QTableWidgetItem(f"{float_value:.5f}"))
+        
+        elif message_type == 0x07:
+            self.table_widget.setItem(index, 1, QTableWidgetItem(f"{parsed_data[0]}"))
+
+            
+        
+
+
+
+
 
 
 
