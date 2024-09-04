@@ -7,11 +7,12 @@ from PySide6.QtWidgets import (
 )
 
 class ControlBar(QWidget):
-    def __init__(self, main_window):
+    def __init__(self, main_window, scrollable_table):
         super().__init__()
 
         #We need to reference the main window in order to use the uart handler 
         self.main_window = main_window
+        self.scrollable_table = scrollable_table
 
         # Create the dials
         self.sail_dial = QDial()
@@ -126,6 +127,14 @@ class ControlBar(QWidget):
 
     @Slot()
     def transmit_values(self):
+        #0x01 - State Transition 
+        #0x02 - Steer Controls 
+        #0x03 - Set Longitude 
+        #0x04 - Set Latitude 
+        #0x05 - Poll Longitude 
+        #0x06 - Poll Latitude 
+        #0x07 - Poll State 
+
         sail_dial_value = self.sail_dial.value()
         rudder_dial_value = self.rudder_dial.value()
         transmit_value = self.transmit_switch.isChecked()

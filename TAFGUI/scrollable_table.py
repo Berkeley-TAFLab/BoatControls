@@ -3,6 +3,8 @@ import struct
 from PySide6.QtWidgets import QApplication, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 from PySide6.QtCore import Qt
 
+message_id_list = [0x08, 0x09, 0x0A,0x0B]
+
 class ScrollableTableWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -46,10 +48,12 @@ class ScrollableTableWidget(QWidget):
 
         #if we can't find hte id mapping, then we need to add it to the mapping
         else: 
-            self.id_mapping[parsed_id] = index
-            self.row_nums += 1  
-            self.table_widget.setRowCount(self.row_nums) #add the new row into the tablem
-            self.table_widget.setItem(index, 0, QTableWidgetItem(f"{parsed_id}")) #set the id in the new row
+            #Might be a good method to ensure the message is valid.
+            if message_type in message_id_list:
+                self.id_mapping[parsed_id] = index
+                self.row_nums += 1  
+                self.table_widget.setRowCount(self.row_nums) #add the new row into the tablem
+                self.table_widget.setItem(index, 0, QTableWidgetItem(f"{parsed_id}")) #set the id in the new row
 
         #Indices 
             # 0 - ID 
@@ -84,14 +88,3 @@ class ScrollableTableWidget(QWidget):
                 float_value = struct.unpack('!f', parsed_data)[0]
                 print(f"Float value: {float_value}") 
                 self.table_widget.setItem(index, 5, QTableWidgetItem(f"{float_value:.5f}"))
-
-
-            
-        
-
-
-
-
-
-
-
