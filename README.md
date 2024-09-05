@@ -55,3 +55,5 @@ GUI folder and adding the TransmitterModule directory for future usage.
 Transmissions from boat to control panel now work. Need to flesh out the transmitter side code and the message protocol between the two. Also, I learned that the GUI only works on my Mac for some 
 reason and not the PC
 
+## 9/4/24 
+Forgot to update this document regularly. Currently working on having the GUI interact with the boats properly.
