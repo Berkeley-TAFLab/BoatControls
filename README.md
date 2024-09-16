@@ -5,7 +5,8 @@ Arduino project that controls the rudder and sail based on the position of the w
  - Servo - Contains code intended to be flashed onto the boat itself. 
  - TAFGUI - Contains code for the Boat GUI that is intended to be used to control boats and display data received via Xbee.
  - TransmitterModule - (deprecated since the usage of the Xbee) Contains code to be used with the 433Mhz radio modules on the boat. 
- - XbeeFolder - Test code to interact with the xbees. These are features that will eventually be added back into the Servo directory. Currently still experimenting with Xbees 
+ - XbeeFolder - Test code to interact with the xbees. These are features that will eventually be added back into the Servo directory. Currently still experimenting with Xbees
+ - Message_IDS.txt - Contains IDs for each of our custom message types to be sent via Xbee
 
 # Devlog  
 
