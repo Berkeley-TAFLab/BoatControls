@@ -1,5 +1,11 @@
 # BoatControls
-Arduino project that controls the rudder and sail based on the position of the wind vane. This document will be used in order to log current progress of the firmware.
+Arduino project that controls the rudder and sail based on the position of the wind vane. This document will be used as documentation and as a devlog.
+
+# Project structure 
+ - Servo - Contains code intended to be flashed onto the boat itself. 
+ - TAFGUI - Contains code for the Boat GUI that is intended to be used to control boats and display data received via Xbee.
+ - TransmitterModule - (deprecated since the usage of the Xbee) Contains code to be used with the 433Mhz radio modules on the boat. 
+ - XbeeFolder - Test code to interact with the xbees. These are features that will eventually be added back into the Servo directory. Currently still experimenting with Xbees 
 
 # Devlog  
 
@@ -57,3 +63,6 @@ reason and not the PC
 
 ## 9/4/24 
 Forgot to update this document regularly. Currently working on having the GUI interact with the boats properly.
+
+## 9/16/24
+Removed extraneous folders that won't be used. Moving to Xbees so that experimental code is now included in this repository. Need to fix the connection between Xbee and GUI.
