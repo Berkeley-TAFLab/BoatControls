@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
+#include "message_ids.h"
+
 #define TX_PIN 16 // Connect this to the D-in pin
 #define RX_PIN 17 // Connect this to the D-out
 
@@ -136,4 +138,47 @@ bool receive_xbee(uint8_t* buffer, size_t* length, uint64_t* source_address, uin
     } 
 
     return false;
+}
+
+
+//Parses xbee message based on our currently defined message structure
+void parse_xbee_msg(uint8_t* data_buffer,size_t length){
+    //Assert the message is of proper length. Nothing should be less than 2
+    if(length < 2){
+        return;
+    }
+
+    uint8_t message_type = data_buffer[0];
+
+    switch(message_type){
+        case STATE_TRANS_MSG:
+            Serial.println("State Trans msg received");
+            break;
+        case STEER_CTRL_MSG:
+            Serial.println("Steer msg received");
+            break;
+        case SET_LONG_MSG:
+            Serial.println("Set Long msg received");
+            break;
+        case SET_LAT_MSG:
+            Serial.println("Set Lat msg received");
+            break;
+        case POLL_LONG_MSG:
+            Serial.println("Poll Long msg received");
+            break;
+        case POLL_LAT_MSG:
+            Serial.println("Poll lat msg received");
+            break;
+        case POLL_STATE_MSG:
+            Serial.println("Poll state msg received");
+            break;
+      
+            
+    }
+
+    for (size_t i = 0; i < length; i++)
+    {
+      Serial.print(data_buffer[i], HEX);
+    }
+    Serial.println();
 }

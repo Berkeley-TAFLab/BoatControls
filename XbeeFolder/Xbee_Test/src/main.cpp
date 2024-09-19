@@ -13,8 +13,8 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  uint8_t payload[] = {'H', 'e', 'l', 'l', 'o'};
-  transmit_xbee(payload, sizeof(payload));
+  // uint8_t payload[] = {'H', 'e', 'l', 'l', 'o'};
+  // transmit_xbee(payload, sizeof(payload));
 
   // Example of receiving data
   uint8_t receive_buffer[256];
@@ -24,16 +24,10 @@ void loop()
 
   if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
   {
-    Serial.print("Received from 0x");
-    Serial.print(source_address, HEX);
-    Serial.print(" (Network: 0x");
-    Serial.print(source_network_address, HEX);
-    Serial.print("): ");
-    for (size_t i = 0; i < receive_length; i++)
-    {
-      Serial.write(receive_buffer[i]);
-    }
-    Serial.println();
+    Serial.println("received messagefg");
+    parse_xbee_msg(receive_buffer, receive_length);
+
+
   }
 
   delay(500);
