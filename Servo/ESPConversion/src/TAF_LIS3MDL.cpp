@@ -32,14 +32,14 @@ void read_lis3mdl(){
     mag_data[1] = mag_event.magnetic.y; 
     mag_data[2] = mag_event.magnetic.z; 
 
-    Serial.print("X_reading: ");
-    Serial.println(mag_event.magnetic.x);
+    // Serial.print("X_reading: ");
+    // Serial.println(mag_event.magnetic.x);
 
-    Serial.print("Y_reading: ");
-    Serial.println(mag_event.magnetic.y);
+    // Serial.print("Y_reading: ");
+    // Serial.println(mag_event.magnetic.y);
 
-    Serial.print("Z_reading: ");
-    Serial.println(mag_event.magnetic.z);
+    // Serial.print("Z_reading: ");
+    // Serial.println(mag_event.magnetic.z);
     
 } 
 

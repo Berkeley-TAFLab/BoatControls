@@ -45,24 +45,24 @@ void read_mpu6050(){
 
 
     //Test print methods
-    Serial.print("ACC_X: ");
-    Serial.println(ax_g);  
+    // Serial.print("ACC_X: ");
+    // Serial.println(ax_g);  
 
-    Serial.print("ACC_Y: ");
-    Serial.println(ay_g);
+    // Serial.print("ACC_Y: ");
+    // Serial.println(ay_g);
 
-    Serial.print("ACC_Z: ");
-    Serial.println(az_g);
+    // Serial.print("ACC_Z: ");
+    // Serial.println(az_g);
 
 
-    Serial.print("GY_X: ");
-    Serial.println(gx_dps);  
+    // Serial.print("GY_X: ");
+    // Serial.println(gx_dps);  
 
-    Serial.print("GY_Y: ");
-    Serial.println(gy_dps);
+    // Serial.print("GY_Y: ");
+    // Serial.println(gy_dps);
 
-    Serial.print("GY_Z: ");
-    Serial.println(gz_dps);
+    // Serial.print("GY_Z: ");
+    // Serial.println(gz_dps);
     
 }
 

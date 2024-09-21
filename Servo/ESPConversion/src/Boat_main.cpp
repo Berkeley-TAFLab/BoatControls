@@ -11,12 +11,15 @@
 #include "TAF_MPU6050.h"
 #include "TAF_LIS3MDL.h"
 #include "TAF_GTU7.h"
-#include "TAF_RF433MHZ.h"
+#include "TAF_Xbee.h"
 
 //Private user defines. These will likely be used by sensors in their respective source files
 HardwareSerial Gps_Serial(1); //Variable used by the GPS
+HardwareSerial Xbee_Serial(2); //Variable used by Xbee
 Servo tailServo;
 Servo sailServo;
+
+
 
 //Detect if there's waterin the bottom of the boat, alert if so
 void water_detection_task(void* parameter){
@@ -25,8 +28,8 @@ void water_detection_task(void* parameter){
 
         //From basic testing it seeems that anything greater than 2000 can probably be considered wet.
         int level = analogRead(WATER_LEVEL_PIN);
-        Serial.print("Water Level: ");
-        Serial.println(level); 
+        // Serial.print("Water Level: ");
+        // Serial.println(level); 
 
         //Delay task to every 100ms
         vTaskDelay(WATER_DETECTION_DELAY/portTICK_PERIOD_MS);
@@ -59,20 +62,27 @@ void steering_task(void* parameter){
 }
 
 void user_input_task(void* parameter){
-    //TODO: As of Jun 18, use the serial monitor, later upgrade to an Xbee.
-    // Maybe this stuff should be triggered via interrupt later 
 
-    //As of Jun 27 This section should no longer use serial monitor 
+  while(1){
+    uint8_t receive_buffer[256];
+    size_t receive_length;
+    uint64_t source_address;
+    uint16_t source_network_address;
 
-    //As of Jul 3 You should only be using the 433MHz radio. Eventually you
-    // might be able to switch to an xbee?
-    while(1){
+    // uint8_t payload[] = {'H', 'e', 'l', 'l', 'o'};
+    // transmit_xbee(payload, sizeof(payload));
 
-        receive_rf433();
+    if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
+    {
+        Serial.println("received message");
+        parse_xbee_msg(receive_buffer, receive_length);
 
-        //Delay task to every 500 ms
-        vTaskDelay(USER_INPUT_DELAY/portTICK_PERIOD_MS);
     }
+
+    vTaskDelay(USER_INPUT_DELAY/portTICK_PERIOD_MS);
+
+  }
+
 
 }
 
@@ -80,7 +90,7 @@ void user_input_task(void* parameter){
 void sensor_readings_task(void* parameter){
     while(1){
         read_wind_vane();
-        Serial.println(get_avg_angle());
+        //Serial.println(get_avg_angle());
         read_mpu6050();
         read_lis3mdl();
         read_gtu7(); 
@@ -99,39 +109,7 @@ void test_serial_task(void* parameter){
 
     int degrees = 0;
     while(1){
-        //Add something here. Uncomment below if you want
-        // Serial.println("Hello World!"); 
 
-
-        //BELOW THIS IS AN I2C SCANNER
-        // byte error, address;
-        // int nDevices;
-
-        // Serial.println("Scanning...");
-
-        // nDevices = 0;
-        // for (address = 1; address < 127; address++) {
-        //     Wire.beginTransmission(address);        // Start I2C transmission to the device
-        //     error = Wire.endTransmission();         // End I2C transmission and get the error code
-
-        //     if (error == 0) {
-        //     Serial.print("I2C device found at address 0x");
-        //     if (address < 16)
-        //         Serial.print("0");  // Add leading zero for single digit addresses
-        //     Serial.println(address, HEX);
-        //     nDevices++;
-        //     } else if (error == 4) {
-        //     Serial.print("Unknown error at address 0x");
-        //     if (address < 16)
-        //         Serial.print("0");  // Add leading zero for single digit addresses
-        //     Serial.println(address, HEX);
-        //     }
-        // }
-
-        // if (nDevices == 0)
-        //     Serial.println("No I2C devices found\n");
-        // else
-        //     Serial.println("Done scanning\n");
 
         int new_degree = degrees % 135;
         sailServo.write(new_degree);
@@ -149,6 +127,7 @@ void general_init(){
     //Used by all I2C devices
     Wire.begin(ENCODER_SDA_PIN,ENCODER_SCL_PIN);  
     Gps_Serial.begin(9600,SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+    Xbee_Serial.begin(9600, SERIAL_8N1, XBEE_RX_PIN, XBEE_TX_PIN);
 }
 
 void main_setup(){
@@ -162,7 +141,6 @@ void main_setup(){
     windvane_init(); // This is needed because of the semaphores unfortunately. DON'T COMMENT OUT 
     setup_mpu6050(); // used for setup with the imu 
     setup_lis3mdl();
-    setup_rf433();
     sailServo.attach(SAIL_SERVO_PIN);
     tailServo.attach(TAIL_SERVO_PIN);
     

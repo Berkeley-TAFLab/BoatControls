@@ -24,15 +24,15 @@ void setup() {
   );
 
     //Initialize Intialize User Input Task
-  // xTaskCreatePinnedToCore(
-  //   user_input_task, 
-  //   "User Input",
-  //   1024, 
-  //   NULL,
-  //   USER_INPUT_PRIO,
-  //   NULL,
-  //   app_cpu
-  // );
+  xTaskCreatePinnedToCore(
+    user_input_task, 
+    "User Input",
+    2048, 
+    NULL,
+    USER_INPUT_PRIO,
+    NULL,
+    app_cpu
+  );
 
   //Initialize Intialize Steering Task
   // xTaskCreatePinnedToCore(

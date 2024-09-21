@@ -4,8 +4,8 @@
 #define SAIL_SERVO_PIN 18
 #define TAIL_SERVO_PIN 19 //This needs to be redefined  
 
-#define RF_433_TX_PIN 25 //Transceiver pin for 433MHz transceiver module
-#define RF_433_RX_PIN 26 //Receiver pin for 433 MHz receiver module 
+#define XBEE_TX_PIN 25
+#define XBEE_RX_PIN 26 
 
 #define GPS_RX_PIN 16 //From tx on gps to rx on esp32
 #define GPS_TX_PIN 17 //From Rx on esp32 to tx on gps but you can maybe disregard this entirely
@@ -25,7 +25,7 @@
 #define WATER_DETECTION_DELAY 100
 #define SENSOR_READ_DELAY     100
 #define STEERING_DELAY        200
-#define USER_INPUT_DELAY      500
+#define USER_INPUT_DELAY      150
 #define TEST_TASK_DELAY       500 
 
 //Peripheral setup
@@ -55,5 +55,13 @@ const float lis3mdl_soft_iron_vals[3][3] = {
 #define POLL_STATUS 0x02 
 #define POLL_LAT 0x03 
 #define POLL_LONG 0x04 
+
+#define STATE_TRANS_MSG 0x01 
+#define STEER_CTRL_MSG 0X02 
+#define SET_LONG_MSG 0x03 
+#define SET_LAT_MSG 0x04 
+#define POLL_LONG_MSG 0x05 
+#define POLL_LAT_MSG 0x06 
+#define POLL_STATE_MSG 0x07 
 
 //Debugging variables to disable certain setup tasks or functions
