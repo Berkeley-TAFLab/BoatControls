@@ -3,88 +3,67 @@ import struct
 from PySide6.QtWidgets import QApplication, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 from PySide6.QtCore import Qt
 
-message_id_list = [0x08, 0x09, 0x0A,0x0B]
+MESSAGE_ID_LIST = [0x08, 0x09, 0x0A, 0x0B]
 
 class ScrollableTableWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.table_widget = QTableWidget()
-        self.table_widget.setRowCount(0)  # Set number of rows
-        self.table_widget.setColumnCount(6)  # Set number of columns
+        self.table_widget.setRowCount(0)
+        self.table_widget.setColumnCount(6)
 
-        # Set headers
-        self.table_widget.setHorizontalHeaderLabels(["ID", "Timestamp", "Status", "Longitude", "Latitude","Heading"])
+        self.table_widget.setHorizontalHeaderLabels(["Source Address", "Network Address", "Status", "Longitude", "Latitude", "Heading"])
 
-        # Add data to the table
-        for row in range(10):
-            for column in range(5):
-                item = QTableWidgetItem(f"Item {row+1},{column+1}")
-                self.table_widget.setItem(row, column, item)
-
-        # Make the table scrollable
         self.table_widget.setVerticalScrollMode(QTableWidget.ScrollPerPixel)
         self.table_widget.setHorizontalScrollMode(QTableWidget.ScrollPerPixel)
 
         layout = QVBoxLayout()
         layout.addWidget(self.table_widget)
         self.setLayout(layout)
-        self.row_nums = 0 #I feel like row_nums can easily be used to calculate the cur_index
 
-        self.id_mapping = {} #dictionary to store IDs
+        self.address_mapping = {}
 
-    def update_table(self,data):
-        #Parse data from the data array
-        parsed_id = data[0]   
-        message_type = data[1]
-        parsed_data = data[2]
+    def update_table(self, message):
+        source_address = message['source_address']
+        network_address = message['source_network_address']
+        data = bytes.fromhex(message['data'])
 
-        #initially set the index to the very last row just in case
-        index = self.row_nums
+        if len(data) < 2:
+            print("Invalid data length")
+            return
 
-        #If we find the id in the mappings, set the index value to that
-        if parsed_id in self.id_mapping:
-            index = self.id_mapping[parsed_id]
+        message_type = data[0]
+        parsed_data = data[1:]
 
-        #if we can't find hte id mapping, then we need to add it to the mapping
-        else: 
-            #Might be a good method to ensure the message is valid.
-            if message_type in message_id_list:
-                self.id_mapping[parsed_id] = index
-                self.row_nums += 1  
-                self.table_widget.setRowCount(self.row_nums) #add the new row into the tablem
-                self.table_widget.setItem(index, 0, QTableWidgetItem(f"{parsed_id}")) #set the id in the new row
+        if message_type not in MESSAGE_ID_LIST:
+            print(f"Unknown message type: {message_type}")
+            return
 
-        #Indices 
-            # 0 - ID 
-            # 1 - Timestamp 
-            # 2 - Status 
-            # 3 - Longitude 
-            # 4 - Latitude 
-            # 5 - Heading
+        if source_address in self.address_mapping:
+            row = self.address_mapping[source_address]
+        else:
+            row = self.table_widget.rowCount()
+            self.table_widget.insertRow(row)
+            self.address_mapping[source_address] = row
 
-        match message_type: 
-            #Receive Status
-            case 0x08:
-                self.table_widget.setItem(index, 2, QTableWidgetItem(f"{parsed_data[0]}"))
+        self.table_widget.setItem(row, 0, QTableWidgetItem(source_address))
+        self.table_widget.setItem(row, 1, QTableWidgetItem(network_address))
 
-            #Receive Longitude
-            case 0x09: 
-                parsed_data.reverse();
-                float_value = struct.unpack('!f', parsed_data)[0]
-                print(f"Float value: {float_value}") 
-                self.table_widget.setItem(index, 3, QTableWidgetItem(f"{float_value:.5f}"))
-            
-            #Receive Latitude
-            case 0x0A: 
-                parsed_data.reverse();
-                float_value = struct.unpack('!f', parsed_data)[0]
-                print(f"Float value: {float_value}") 
-                self.table_widget.setItem(index, 4, QTableWidgetItem(f"{float_value:.5f}"))
-            
-            #Receive Heading
-            case 0x0B: 
-                parsed_data.reverse();
-                float_value = struct.unpack('!f', parsed_data)[0]
-                print(f"Float value: {float_value}") 
-                self.table_widget.setItem(index, 5, QTableWidgetItem(f"{float_value:.5f}"))
+        try:
+            if message_type == 0x08:  # Receive Status
+                self.table_widget.setItem(row, 2, QTableWidgetItem(f"{parsed_data[0]}"))
+            elif message_type == 0x09:  # Receive Longitude
+                float_value = struct.unpack('!f', parsed_data[:4])[0]
+                self.table_widget.setItem(row, 3, QTableWidgetItem(f"{float_value:.5f}"))
+            elif message_type == 0x0A:  # Receive Latitude
+                float_value = struct.unpack('!f', parsed_data[:4])[0]
+                self.table_widget.setItem(row, 4, QTableWidgetItem(f"{float_value:.5f}"))
+            elif message_type == 0x0B:  # Receive Heading
+                float_value = struct.unpack('!f', parsed_data[:4])[0]
+                self.table_widget.setItem(row, 5, QTableWidgetItem(f"{float_value:.5f}"))
+
+        except struct.error:
+            print(f"Error parsing data for message type {message_type}")
+
+        self.table_widget.resizeColumnsToContents()

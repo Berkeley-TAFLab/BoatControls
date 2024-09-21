@@ -62,15 +62,18 @@ void steering_task(void* parameter){
 }
 
 void user_input_task(void* parameter){
-
+    uint8_t count = 0;
   while(1){
     uint8_t receive_buffer[256];
     size_t receive_length;
     uint64_t source_address;
     uint16_t source_network_address;
+    if(count == 5){
+        uint8_t payload[] = {0x08, 0x01, 0x00, 0x01, 0x01};
+        transmit_xbee(payload, sizeof(payload));
+        count = 0;
+    }
 
-    // uint8_t payload[] = {'H', 'e', 'l', 'l', 'o'};
-    // transmit_xbee(payload, sizeof(payload));
 
     if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
     {
@@ -78,6 +81,7 @@ void user_input_task(void* parameter){
         parse_xbee_msg(receive_buffer, receive_length);
 
     }
+    count ++;
 
     vTaskDelay(USER_INPUT_DELAY/portTICK_PERIOD_MS);
 

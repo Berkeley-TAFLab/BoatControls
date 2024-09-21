@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                                QHBoxLayout, QSplitter, QToolBar, QStackedWidget, QInputDialog)
-from PySide6.QtCore import Qt, QThread, Signal, Slot, QUrl
+from PySide6.QtCore import Qt, QThread, Signal, Slot, QUrl, QTimer
 from PySide6.QtGui import QAction
 from PySide6.QtQuickWidgets import QQuickWidget
 from scrollable_table import ScrollableTableWidget
@@ -9,10 +9,13 @@ from controlbar import ControlBar
 import serial
 import serial.tools.list_ports
 import time
+import struct
 
+# XBee API frame start delimiter
+START_DELIMITER = 0x7E
 
 class UARTHandler(QThread):
-    message_received = Signal(bytes)
+    message_received = Signal(dict)
 
     def __init__(self, port, baud_rate):
         super().__init__()
@@ -39,23 +42,78 @@ class UARTHandler(QThread):
                     chunk = self.serial.read(self.serial.in_waiting)
                     self.buffer.extend(chunk)
                     
-                    while b'\n\n\n' in self.buffer:
-                        message, self.buffer = self.buffer.split(b'\n\n\n', 1)
-                        if len(message) >= 2:  # Ensure we have at least ID and Data bytes
-                            self.message_received.emit(message)
-                        else:
-                            print(f"Received incomplete message: {message.hex()}")
+                    # Try to parse XBee message
+                    message = self.read_xbee_message()
+                    if message:
+                        self.message_received.emit(message)
                         
             except (serial.SerialException, OSError) as e:
                 print(f"Serial error: {e}")
                 self.serial.close()
                 time.sleep(5)
 
+    def read_xbee_message(self):
+        """
+        Read and parse an XBee API frame from the buffer.
+        """
+        if len(self.buffer) < 3:
+            return None
+
+        # Check for start delimiter
+        start_index = self.buffer.find(START_DELIMITER.to_bytes(1, 'big'))
+        if start_index == -1:
+            return None
+
+        # Remove data before start delimiter
+        self.buffer = self.buffer[start_index:]
+
+        if len(self.buffer) < 4:
+            return None
+
+        # Read frame length
+        length = int.from_bytes(self.buffer[1:3], 'big')
+
+        # Check if we have the full frame
+        if len(self.buffer) < length + 4:
+            return None
+
+        # Extract frame data and checksum
+        frame_data = self.buffer[3:length+3]
+        received_checksum = self.buffer[length+3]
+
+        # Verify checksum
+        calculated_checksum = (0xFF - (sum(frame_data) & 0xFF)) & 0xFF
+        if calculated_checksum != received_checksum:
+            print("Checksum mismatch. Discarding frame.")
+            self.buffer = self.buffer[length+4:]
+            return None
+
+        # Parse frame type
+        frame_type = frame_data[0]
+
+        if frame_type == 0x90:  # ZigBee Receive Packet
+            # Extract source address and data
+            source_address = frame_data[1:9]
+            source_network_address = frame_data[9:11]
+            received_data = frame_data[12:]  # Exclude options byte
+
+            # Remove processed frame from buffer
+            self.buffer = self.buffer[length+4:]
+
+            return {
+                'source_address': ':'.join(f'{b:02X}' for b in source_address),
+                'source_network_address': f'{source_network_address[0]:02X}{source_network_address[1]:02X}',
+                'data': received_data.hex()
+            }
+        else:
+            print(f"Unsupported frame type: {frame_type:02X}")
+            self.buffer = self.buffer[length+4:]
+            return None
+
     def stop(self):
         self.running = False
         if self.serial and self.serial.is_open:
             self.serial.close()
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -90,6 +148,12 @@ class MainWindow(QMainWindow):
         # Set up UART handler
         self.uart_handler = None
         self.setup_uart()
+        
+        # Create a timer for polling XBee modules
+        self.poll_timer = QTimer(self)
+        self.poll_timer.timeout.connect(self.poll_xbee_modules)
+        self.poll_timer.start(250)  # Poll every 500ms
+
 
     def setup_uart(self):
         # Select serial port
@@ -114,34 +178,20 @@ class MainWindow(QMainWindow):
         else:
             raise Exception("No serial port selected")
 
-    @Slot(str)
+    @Slot(dict)
     def process_serial_message(self, message):
-        print(f"Received raw message: {message.hex()}")
+        print(f"\nReceived XBee message from {message['source_address']} "
+              f"(Network: {message['source_network_address']}):")
+        print(f"Data (hex): {message['data']}")
         
-        if len(message) >= 2:
-            id_byte = message[0] 
-            message_type = message[1] 
-            data_bytes = message[2:]
-
-            data_bytes_hex = ' '.join(f"0x{byte:02X}" for byte in data_bytes)
-
-            print(f"Received ID byte: 0x{id_byte:02X}, Message Type: 0x{message_type:02X} Data bytes: {data_bytes_hex}")
-
-
-            # Update table if window1 is active
-            if self.stacked_widget.currentIndex() == 0:
-                self.table_widget.update_table([id_byte, message_type, data_bytes])
-
-        else:
-            print(f"Incomplete message received: {message.hex()}")
+        # Update table if window1 is active
+        if self.stacked_widget.currentIndex() == 0:
+            self.table_widget.update_table(message)  # Pass the entire message dictionary
 
     def send_uart_message(self, message):
         print("Transmitting uart message")
         if self.uart_handler and self.uart_handler.serial and self.uart_handler.serial.is_open:
-            # Ensure the message ends with a newline
-            if not message.endswith('\n'):
-                message += '\n'
-            self.uart_handler.serial.write(message.encode('utf-8'))   
+            self.uart_handler.serial.write(message)
 
     def create_window1(self):
         window = QWidget()
@@ -167,7 +217,7 @@ class MainWindow(QMainWindow):
         main_splitter.addWidget(top_splitter)
 
         # Bottom widget
-        bottom_widget = ControlBar(self,self.table_widget)
+        bottom_widget = ControlBar(self, self.table_widget)
 
         # Add bottom widget to main splitter
         main_splitter.addWidget(bottom_widget)
@@ -201,6 +251,45 @@ class MainWindow(QMainWindow):
         if self.uart_handler:
             self.uart_handler.stop()
         event.accept()
+
+    def poll_xbee_modules(self):
+        print("Polling detected XBee modules...")
+        for source_address in self.table_widget.address_mapping.keys():
+            # Create a message to poll the XBee module
+            self.create_poll_message(source_address,'FFFE')
+
+
+    def create_poll_message(self,dest_address, network_address):
+        """
+        Creates and sends an XBee API frame to poll a specific XBee device.
+        
+        :param dest_address: 64-bit destination address of the XBee module (as a hex string, e.g., '0013A20012345678')
+        :param network_address: 16-bit network address of the XBee module (as a hex string, e.g., 'FFFE')
+        """
+        frame_type = 0x10  # ZigBee Transmit Request
+        frame_id = 0x01  # Frame ID
+        options = 0x00  # Disable ACK and route discovery
+        
+        # Convert destination address (64-bit) and network address (16-bit) to bytes
+        print(type(dest_address))
+        dest_address_bytes = bytes.fromhex(dest_address.replace(":",""))
+        network_address_bytes = bytes.fromhex(network_address)
+
+        # Example data to send in the payload (customize as needed)
+        payload = b'\x01\x02\x03\x04'
+
+        # Frame data: Frame type + Frame ID + Destination Address + Network Address + Options + Payload
+        frame_data = struct.pack('!B B 8s 2s B', frame_type, frame_id, dest_address_bytes, network_address_bytes, options) + payload
+        
+        # Calculate checksum: 0xFF - (sum of frame data & 0xFF)
+        checksum = (0xFF - (sum(frame_data) & 0xFF)) & 0xFF
+
+        # Construct full frame: Start delimiter (0x7E) + length + frame data + checksum
+        frame = struct.pack('!B H', START_DELIMITER, len(frame_data)) + frame_data + struct.pack('!B', checksum)
+
+        # Send frame over UART
+        print(f"Sending poll message to {dest_address} ({network_address})")
+        self.send_uart_message(frame)    
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
