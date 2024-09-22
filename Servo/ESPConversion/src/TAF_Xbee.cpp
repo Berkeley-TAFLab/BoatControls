@@ -3,6 +3,7 @@
 #include "Boat_SM.h"
 
 #include "constants.h"
+#include "TAF_GTU7.h"
 
 
 extern HardwareSerial Xbee_Serial;
@@ -175,16 +176,31 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
             }
             Serial.println("Set Lat msg received");
             break;
-        case POLL_LONG_MSG:
+        case POLL_LONG_MSG:{
+            uint8_t payload[5]; 
+            payload[0] = SEND_LONG_MSG;
+            float curr_long = get_gtu7_long();
+            compress_long(curr_long, payload+1); 
+            transmit_xbee(payload, sizeof(payload));
             Serial.println("Poll Long msg received");
             break;
-        case POLL_LAT_MSG:
+        } 
+        case POLL_LAT_MSG:{
+            uint8_t payload[5]; 
+            payload[0] = SEND_LAT_MSG;
+            float curr_long = get_gtu7_lat();
+            compress_long(curr_long, payload+1); 
+            transmit_xbee(payload, sizeof(payload));
             Serial.println("Poll lat msg received");
             break;
-        case POLL_STATE_MSG:
+        }
+
+        case POLL_STATE_MSG:{
+            uint8_t payload[] = {SEND_STATUS_MSG, get_curr_state()}; 
+            transmit_xbee(payload, sizeof(payload));
             Serial.println("Poll state msg received");
             break;
-      
+        }
             
     }
 

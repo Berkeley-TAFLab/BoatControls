@@ -5,12 +5,16 @@ from PySide6.QtWidgets import (
     QApplication, QWidget, QGridLayout, QDial, QLabel, QLineEdit, QVBoxLayout,
     QCheckBox, QComboBox, QHBoxLayout
 )
+import struct
+
+# XBee API frame start delimiter
+START_DELIMITER = 0x7E
 
 class ControlBar(QWidget):
     def __init__(self, main_window, scrollable_table):
         super().__init__()
 
-        #We need to reference the main window in order to use the uart handler 
+        # We need to reference the main window in order to use the uart handler 
         self.main_window = main_window
         self.scrollable_table = scrollable_table
 
@@ -50,7 +54,7 @@ class ControlBar(QWidget):
         self.mode_select = QComboBox()
         self.mode_select.addItems(["IDLE", "MANUAL", "AUTO"])
         
-        self.id_select = QLineEdit("0x00")
+        self.id_select = QLineEdit("0013A20012345678")  # Default to a valid 64-bit address
         self.id_select.setAlignment(Qt.AlignCenter)
 
         self.longitude_select = QLineEdit("0.000")
@@ -74,7 +78,7 @@ class ControlBar(QWidget):
         rudder_dial_layout.addWidget(self.rudder_dial)
         rudder_dial_layout.addWidget(self.rudder_disp_val)
 
-        #create a timer in order to transmit values via UART  every so often
+        # Create a timer in order to transmit values via UART every so often
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.transmit_values)
 
@@ -83,7 +87,7 @@ class ControlBar(QWidget):
         control_layout.addWidget(self.transmit_switch)
         control_layout.addWidget(QLabel("Steer Mode"))
         control_layout.addWidget(self.mode_select)
-        control_layout.addWidget(QLabel("Boat ID"))
+        control_layout.addWidget(QLabel("Boat ID (64-bit address)"))
         control_layout.addWidget(self.id_select)
         control_layout.addWidget(QLabel("Requested Longitude"))
         control_layout.addWidget(self.longitude_select)
@@ -96,7 +100,7 @@ class ControlBar(QWidget):
         layout.addLayout(control_layout, 0, 2)
 
         self.setLayout(layout)
-        self.setWindowTitle("Dial Widget Example")
+        self.setWindowTitle("Boat Control")
 
     @Slot()
     def update_sail_disp_val(self, value):
@@ -117,36 +121,44 @@ class ControlBar(QWidget):
         self.rudder_dial.setValue(value)
 
     @Slot()
-    def handle_transmit_switch(self,state):
-        if state == 2: #Originally supposed to be Qt.Checked but for some reason that doesn't work
+    def handle_transmit_switch(self, state):
+        if state == 2:  # Originally supposed to be Qt.Checked but for some reason that doesn't work
             print("Transmitting")
-            self.timer.start(50) # Transmit every 50 ms 
+            self.timer.start(250)  # Transmit every 50 ms 
         else:
             print("Not Transmitting")
             self.timer.stop()
 
     @Slot()
     def transmit_values(self):
-        #0x01 - State Transition 
-        #0x02 - Steer Controls 
-        #0x03 - Set Longitude 
-        #0x04 - Set Latitude 
-        #0x05 - Poll Longitude 
-        #0x06 - Poll Latitude 
-        #0x07 - Poll State 
-
         sail_dial_value = self.sail_dial.value()
         rudder_dial_value = self.rudder_dial.value()
         transmit_value = self.transmit_switch.isChecked()
         mode_value = self.mode_select.currentText()
         id_value = self.id_select.text()
-        longitude_value = self.longitude_select.text()
-        latitude_value = self.latitude_select.text()
+        longitude_value = float(self.longitude_select.text())
+        latitude_value = float(self.latitude_select.text())
 
-        data = f'Sail: {sail_dial_value}, Rudder: {rudder_dial_value}, Transmit: {transmit_value}, ' \
-               f'Mode Select: {mode_value}, ID: {id_value}, ' \
-               f'Longitude: {longitude_value}, Latitude: {latitude_value}\n'
+        # Create XBee API frames for each value
+        self.create_xbee_frame(0x01, struct.pack('!B', ['IDLE', 'MANUAL', 'AUTO'].index(mode_value)))  # State Transition
+        self.create_xbee_frame(0x02, struct.pack('!BB', sail_dial_value, rudder_dial_value))  # Steer Controls
+        self.create_xbee_frame(0x03, struct.pack('!f', longitude_value))  # Set Longitude
+        self.create_xbee_frame(0x04, struct.pack('!f', latitude_value))  # Set Latitude
 
-        self.main_window.send_uart_message(data)
+    def create_xbee_frame(self, frame_type, payload):
+        frame_id = 0x01
+        dest_address = bytes.fromhex(self.id_select.text().replace(":", ""))  # Use the ID from id_select
+        network_address = bytes.fromhex('FFFE')  # Use 'FFFE' as we don't know the 16-bit address
+        broadcast_radius = 0x00
+        options = 0x00
 
+        frame_data = struct.pack('!B B 8s 2s B B', 0x10, frame_id, dest_address, network_address, broadcast_radius, options)
+        frame_data += struct.pack('!B', frame_type) + payload
 
+        length = len(frame_data)
+        checksum = 0xFF - (sum(frame_data) & 0xFF)
+
+        frame = struct.pack('!B H', START_DELIMITER, length) + frame_data + struct.pack('!B', checksum)
+
+        print(f"Sending XBee frame to {self.id_select.text()}: {frame.hex()}")
+        self.main_window.send_uart_message(frame)

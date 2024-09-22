@@ -21,6 +21,8 @@ void sm_init();
 
 void transition(SM_States next_state);
 
+void trans_com(COM_Status next_status);
+
 SM_States get_curr_state();
 
 COM_Status get_com_status();

@@ -274,26 +274,28 @@ class MainWindow(QMainWindow):
         dest_address_bytes = bytes.fromhex(dest_address.replace(":", ""))
         network_address_bytes = bytes.fromhex(network_address)
 
-        # Example data to send in the payload (customize as needed)
-        payload = b'\x01\x02'
-
-        # Frame data: Frame type + Frame ID + Destination Address + Network Address + Broadcast Radius + Options + Payload
-        frame_data = struct.pack('!B B 8s 2s B B', frame_type, frame_id, dest_address_bytes, network_address_bytes, broadcast_radius, options) + payload
+        poll_array = [b'\x05', b'\x06', b'\x07']
         
-        # Calculate length (excluding start delimiter and length bytes)
-        length = len(frame_data)
-        
-        # Calculate checksum: 0xFF - (sum of frame data & 0xFF)
-        checksum = 0xFF - (sum(frame_data) & 0xFF)
+        for poll_id in poll_array: 
 
-        # Construct full frame: Start delimiter (0x7E) + length + frame data + checksum
-        frame = struct.pack('!B H', START_DELIMITER, length) + frame_data + struct.pack('!B', checksum)
 
-        # Send frame over UART
-        print(f"Sending poll message to {dest_address} ({network_address})")
-        print(f"Frame (hex): {frame.hex()}")
-        self.send_uart_message(frame)
-        
+            # Frame data: Frame type + Frame ID + Destination Address + Network Address + Broadcast Radius + Options + Payload
+            frame_data = struct.pack('!B B 8s 2s B B', frame_type, frame_id, dest_address_bytes, network_address_bytes, broadcast_radius, options) + poll_id +b'\x01'
+            
+            # Calculate length (excluding start delimiter and length bytes)
+            length = len(frame_data)
+            
+            # Calculate checksum: 0xFF - (sum of frame data & 0xFF)
+            checksum = 0xFF - (sum(frame_data) & 0xFF)
+
+            # Construct full frame: Start delimiter (0x7E) + length + frame data + checksum
+            frame = struct.pack('!B H', START_DELIMITER, length) + frame_data + struct.pack('!B', checksum)
+
+            # Send frame over UART
+            print(f"Sending poll message to {dest_address} ({network_address})")
+            print(f"Frame (hex): {frame.hex()}")
+            self.send_uart_message(frame)
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()

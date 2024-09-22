@@ -20,6 +20,14 @@ Servo tailServo;
 Servo sailServo;
 
 
+//Variables for xbee 
+uint8_t receive_buffer[256];
+size_t receive_length;
+uint64_t source_address;
+uint16_t source_network_address;
+uint8_t count = 0; 
+
+
 
 //Detect if there's waterin the bottom of the boat, alert if so
 void water_detection_task(void* parameter){
@@ -63,13 +71,8 @@ void steering_task(void* parameter){
 
 void user_input_task(void* parameter){ 
 
-    uint8_t receive_buffer[256];
-    size_t receive_length;
-    uint64_t source_address;
-    uint16_t source_network_address;
-    uint8_t count = 0; 
-
     while(1){
+        //This block is used by the boat to connect to a network on startup
         if(get_com_status() == SEARCHING){
 
             if(count == 5){
@@ -77,16 +80,16 @@ void user_input_task(void* parameter){
                 transmit_xbee(payload, sizeof(payload));
                 count = 0;
             }
-
-
             if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
             {
                 Serial.println("received message");
                 parse_xbee_msg(receive_buffer, receive_length);
-
+                trans_com(CONNECTED);
             }
             count ++;
 
+        //Once we connect to a network we can start responding properly instead of 
+        //constantly transmitting 
         }else{ 
             if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
             {
@@ -157,6 +160,7 @@ void main_setup(){
     windvane_init(); // This is needed because of the semaphores unfortunately. DON'T COMMENT OUT 
     setup_mpu6050(); // used for setup with the imu 
     setup_lis3mdl();
+    setup_gtu7();
     sailServo.attach(SAIL_SERVO_PIN);
     tailServo.attach(TAIL_SERVO_PIN);
     

@@ -37,6 +37,15 @@ void transition(SM_States next_state){
     }
 } 
 
+void trans_com(COM_Status next_status){
+    if(xSemaphoreTake(com_sem, 5000) == true){
+        com_status = next_status;
+        xSemaphoreGive(com_sem);
+    }else{
+        Serial.println("Possible deadlock on com status");
+    }
+}
+
 SM_States get_curr_state(){
     SM_States return_state = BAD_STATE;
     if(xSemaphoreTake(state_sem, 5000) == true){
