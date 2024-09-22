@@ -6,12 +6,14 @@
 enum SM_States {
     IDLE, 
     MANUAL,
-    AUTO
+    AUTO,
+    BAD_STATE
 };
 
 enum COM_Status{
     CONNECTED,
-    SEARCHING
+    SEARCHING,
+    BAD_COM
 };
 
 

@@ -146,7 +146,6 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
 
     uint8_t message_type = data_buffer[0];
 
-
     switch(message_type){
         case STATE_TRANS_MSG:
             if (data_buffer[1] == 0){
@@ -160,7 +159,7 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
             break;
         case STEER_CTRL_MSG:
             if(get_curr_state() == MANUAL){
-
+                
             }
             Serial.println("Steer msg received");
             break;
