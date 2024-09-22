@@ -106,7 +106,6 @@ class UARTHandler(QThread):
                 'data': received_data.hex()
             }
         else:
-            print(f"Unsupported frame type: {frame_type:02X}")
             self.buffer = self.buffer[length+4:]
             return None
 
@@ -152,7 +151,7 @@ class MainWindow(QMainWindow):
         # Create a timer for polling XBee modules
         self.poll_timer = QTimer(self)
         self.poll_timer.timeout.connect(self.poll_xbee_modules)
-        self.poll_timer.start(250)  # Poll every 500ms
+        self.poll_timer.start(300)  # Poll every 500ms
 
 
     def setup_uart(self):
@@ -259,7 +258,7 @@ class MainWindow(QMainWindow):
             self.create_poll_message(source_address,'FFFE')
 
 
-    def create_poll_message(self,dest_address, network_address):
+    def create_poll_message(self, dest_address, network_address):
         """
         Creates and sends an XBee API frame to poll a specific XBee device.
         
@@ -268,29 +267,33 @@ class MainWindow(QMainWindow):
         """
         frame_type = 0x10  # ZigBee Transmit Request
         frame_id = 0x01  # Frame ID
+        broadcast_radius = 0x00  # Use maximum number of hops
         options = 0x00  # Disable ACK and route discovery
         
         # Convert destination address (64-bit) and network address (16-bit) to bytes
-        print(type(dest_address))
-        dest_address_bytes = bytes.fromhex(dest_address.replace(":",""))
+        dest_address_bytes = bytes.fromhex(dest_address.replace(":", ""))
         network_address_bytes = bytes.fromhex(network_address)
 
         # Example data to send in the payload (customize as needed)
-        payload = b'\x01\x02\x03\x04'
+        payload = b'\x01\x02'
 
-        # Frame data: Frame type + Frame ID + Destination Address + Network Address + Options + Payload
-        frame_data = struct.pack('!B B 8s 2s B', frame_type, frame_id, dest_address_bytes, network_address_bytes, options) + payload
+        # Frame data: Frame type + Frame ID + Destination Address + Network Address + Broadcast Radius + Options + Payload
+        frame_data = struct.pack('!B B 8s 2s B B', frame_type, frame_id, dest_address_bytes, network_address_bytes, broadcast_radius, options) + payload
+        
+        # Calculate length (excluding start delimiter and length bytes)
+        length = len(frame_data)
         
         # Calculate checksum: 0xFF - (sum of frame data & 0xFF)
-        checksum = (0xFF - (sum(frame_data) & 0xFF)) & 0xFF
+        checksum = 0xFF - (sum(frame_data) & 0xFF)
 
         # Construct full frame: Start delimiter (0x7E) + length + frame data + checksum
-        frame = struct.pack('!B H', START_DELIMITER, len(frame_data)) + frame_data + struct.pack('!B', checksum)
+        frame = struct.pack('!B H', START_DELIMITER, length) + frame_data + struct.pack('!B', checksum)
 
         # Send frame over UART
         print(f"Sending poll message to {dest_address} ({network_address})")
-        self.send_uart_message(frame)    
-
+        print(f"Frame (hex): {frame.hex()}")
+        self.send_uart_message(frame)
+        
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
