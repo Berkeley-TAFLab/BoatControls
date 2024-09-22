@@ -61,33 +61,45 @@ void steering_task(void* parameter){
     }
 }
 
-void user_input_task(void* parameter){
-    uint8_t count = 0;
-  while(1){
+void user_input_task(void* parameter){ 
+
     uint8_t receive_buffer[256];
     size_t receive_length;
     uint64_t source_address;
     uint16_t source_network_address;
-    if(count == 5){
-        uint8_t payload[] = {0x08, 0x01, 0x00, 0x01, 0x01};
-        transmit_xbee(payload, sizeof(payload));
-        count = 0;
+    uint8_t count = 0; 
+
+    while(1){
+        if(get_com_status() == SEARCHING){
+
+            if(count == 5){
+                uint8_t payload[] = {SEND_STATUS_MSG, get_curr_state()};
+                transmit_xbee(payload, sizeof(payload));
+                count = 0;
+            }
+
+
+            if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
+            {
+                Serial.println("received message");
+                parse_xbee_msg(receive_buffer, receive_length);
+
+            }
+            count ++;
+
+        }else{ 
+            if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
+            {
+                Serial.println("received message");
+                parse_xbee_msg(receive_buffer, receive_length);
+
+            }
+
+        }
+
+
+        vTaskDelay(USER_INPUT_DELAY/portTICK_PERIOD_MS);
     }
-
-
-    if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
-    {
-        Serial.println("received message");
-        parse_xbee_msg(receive_buffer, receive_length);
-
-    }
-    count ++;
-
-    vTaskDelay(USER_INPUT_DELAY/portTICK_PERIOD_MS);
-
-  }
-
-
 }
 
 //Collect readings from the imu, encoder, magnetometer,gps

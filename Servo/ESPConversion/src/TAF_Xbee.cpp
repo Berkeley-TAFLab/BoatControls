@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
+#include "Boat_SM.h"
 
 #include "constants.h"
 
@@ -145,17 +146,34 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
 
     uint8_t message_type = data_buffer[0];
 
+
     switch(message_type){
         case STATE_TRANS_MSG:
+            if (data_buffer[1] == 0){
+                transition(IDLE);
+            }else if (data_buffer[1] == 1){
+                transition(MANUAL);
+            }else if (data_buffer[1] == 2){
+                transition(AUTO);
+            }
             Serial.println("State Trans msg received");
             break;
         case STEER_CTRL_MSG:
+            if(get_curr_state() == MANUAL){
+
+            }
             Serial.println("Steer msg received");
             break;
         case SET_LONG_MSG:
+            if(get_curr_state() == MANUAL){
+
+            }
             Serial.println("Set Long msg received");
             break;
         case SET_LAT_MSG:
+            if(get_curr_state() == MANUAL){
+
+            }
             Serial.println("Set Lat msg received");
             break;
         case POLL_LONG_MSG:

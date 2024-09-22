@@ -50,12 +50,13 @@ const float lis3mdl_soft_iron_vals[3][3] = {
 #define RF_ID 0x01 // This value will change as more devices are added
 
 //Message types for the RF 433MHz transmissions. More may be added 
-#define SET_MODE 0x00 
-#define STEER_MSG 0x01
-#define POLL_STATUS 0x02 
-#define POLL_LAT 0x03 
-#define POLL_LONG 0x04 
+// #define SET_MODE 0x00 
+// #define STEER_MSG 0x01
+// #define POLL_STATUS 0x02 
+// #define POLL_LAT 0x03 
+// #define POLL_LONG 0x04 
 
+//Message types for the Xbee transmissions. GUI to boat 
 #define STATE_TRANS_MSG 0x01 
 #define STEER_CTRL_MSG 0X02 
 #define SET_LONG_MSG 0x03 
@@ -63,5 +64,11 @@ const float lis3mdl_soft_iron_vals[3][3] = {
 #define POLL_LONG_MSG 0x05 
 #define POLL_LAT_MSG 0x06 
 #define POLL_STATE_MSG 0x07 
+
+//Message types for Xbee transmissions. Boat to GUI 
+#define SEND_STATUS_MSG 0x08
+#define SEND_LONG_MSG 0X09
+#define SEND_LAT_MSG 0x0A
+#define SEND_HEAD_MSG 0x0B
 
 //Debugging variables to disable certain setup tasks or functions
