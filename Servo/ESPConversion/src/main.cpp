@@ -35,15 +35,15 @@ void setup() {
   );
 
   //Initialize Intialize Steering Task
-  // xTaskCreatePinnedToCore(
-  //   steering_task, 
-  //   "Steering",
-  //   1024, 
-  //   NULL,
-  //   STEERING_PRIO,
-  //   NULL,
-  //   app_cpu
-  // );
+  xTaskCreatePinnedToCore(
+    steering_task, 
+    "Steering",
+    4096, 
+    NULL,
+    STEERING_PRIO,
+    NULL,
+    app_cpu
+  );
 
   xTaskCreatePinnedToCore(
     sensor_readings_task,

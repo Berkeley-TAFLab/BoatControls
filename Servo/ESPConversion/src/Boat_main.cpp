@@ -12,6 +12,7 @@
 #include "TAF_LIS3MDL.h"
 #include "TAF_GTU7.h"
 #include "TAF_Xbee.h"
+#include "Boat_steer.h"
 
 //Private user defines. These will likely be used by sensors in their respective source files
 HardwareSerial Gps_Serial(1); //Variable used by the GPS
@@ -25,7 +26,6 @@ uint8_t receive_buffer[256];
 size_t receive_length;
 uint64_t source_address;
 uint16_t source_network_address;
-uint8_t count = 0; 
 
 
 
@@ -53,10 +53,12 @@ void steering_task(void* parameter){
             case IDLE:
                 Serial.println("Currently Idling... Do Nothing");
                 break;
-            case MANUAL:
+            case MANUAL: 
+                manual_steer();
                 Serial.println("Currently in Manual controls...");
                 break;
             case AUTO:
+                auto_steer();
                 Serial.println("Currently in Auto mode");
                 break;
             default:
@@ -70,6 +72,8 @@ void steering_task(void* parameter){
 }
 
 void user_input_task(void* parameter){ 
+    uint8_t count = 0; 
+    uint8_t watchdog = 0;
 
     while(1){
         //This block is used by the boat to connect to a network on startup
@@ -91,11 +95,20 @@ void user_input_task(void* parameter){
         //Once we connect to a network we can start responding properly instead of 
         //constantly transmitting 
         }else{ 
+
+            //If we receive a message, reset watchdog and parse message properly
             if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
             {
+                watchdog = 0;
                 Serial.println("received message");
                 parse_xbee_msg(receive_buffer, receive_length);
 
+            //After USER_INPUT_Delay * 30 has elapsed and no response from GUI, we will go back 
+            // to searching mode to find a network to connect to
+            }else if(watchdog > 30){
+                trans_com(SEARCHING);
+            }else{
+                watchdog++;
             }
 
         }
@@ -161,6 +174,7 @@ void main_setup(){
     setup_mpu6050(); // used for setup with the imu 
     setup_lis3mdl();
     setup_gtu7();
+    setup_steer();
     sailServo.attach(SAIL_SERVO_PIN);
     tailServo.attach(TAIL_SERVO_PIN);
     

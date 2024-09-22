@@ -4,6 +4,7 @@
 
 #include "constants.h"
 #include "TAF_GTU7.h"
+#include "Boat_steer.h"
 
 
 extern HardwareSerial Xbee_Serial;
@@ -148,24 +149,33 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
     uint8_t message_type = data_buffer[0];
 
     switch(message_type){
-        case STATE_TRANS_MSG:
-            if (data_buffer[1] == 0){
-                transition(IDLE);
-            }else if (data_buffer[1] == 1){
-                transition(MANUAL);
-            }else if (data_buffer[1] == 2){
-                transition(AUTO);
+        case STATE_TRANS_MSG: 
+            //Ensure message is of proper length 
+            if(length >=2){
+                if (data_buffer[1] == 0){
+                    transition(IDLE);
+                }else if (data_buffer[1] == 1){
+                    transition(MANUAL);
+                }else if (data_buffer[1] == 2){
+                    transition(AUTO);
+                }
             }
+
             Serial.println("State Trans msg received");
             break;
-        case STEER_CTRL_MSG:
-            if(get_curr_state() == MANUAL){
-                
+        case STEER_CTRL_MSG: {
+            if(get_curr_state() == MANUAL && length >=3 ){
+                uint8_t sail_position = data_buffer[1];
+                uint8_t rudder_position = data_buffer[2]; 
+                set_sail_servo(sail_position);
+                set_rudder_servo(rudder_position);
             }
             Serial.println("Steer msg received");
             break;
+        }
+
         case SET_LONG_MSG:
-            if(get_curr_state() == MANUAL){
+            if(get_curr_state() == MANUAL && length >=5){
 
             }
             Serial.println("Set Long msg received");
