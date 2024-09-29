@@ -56,15 +56,15 @@ void setup() {
   );
 
   // Initialize Serial task
-  xTaskCreatePinnedToCore(
-    test_serial_task, 
-    "Test Task",
-    4096, 
-    NULL,
-    1,
-    NULL,
-    app_cpu
-  );
+  // xTaskCreatePinnedToCore(
+  //   test_serial_task, 
+  //   "Test Task",
+  //   4096, 
+  //   NULL,
+  //   1,
+  //   NULL,
+  //   app_cpu
+  // );
 
 
 

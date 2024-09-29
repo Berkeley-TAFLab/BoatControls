@@ -15,17 +15,17 @@
 #define ENCODER_SCL_PIN 22 //Don't change
 
 //Task priority definitions (These shouldn't really be changed much) 
-#define WATER_DETECTION_PRIO 5
-#define SENSOR_READ_PRIO     4
-#define STEERING_PRIO        3
-#define USER_INPUT_PRIO      2 
+#define WATER_DETECTION_PRIO 2
+#define SENSOR_READ_PRIO     5
+#define STEERING_PRIO        4
+#define USER_INPUT_PRIO      3 
 #define TEST_TASK_PRIO       1 
 
 //Task delays. Change these however you see fit
-#define WATER_DETECTION_DELAY 100
-#define SENSOR_READ_DELAY     100
-#define STEERING_DELAY        200
-#define USER_INPUT_DELAY      150
+#define WATER_DETECTION_DELAY 500
+#define SENSOR_READ_DELAY     300
+#define STEERING_DELAY        100
+#define USER_INPUT_DELAY      50
 #define TEST_TASK_DELAY       500 
 
 //Peripheral setup
