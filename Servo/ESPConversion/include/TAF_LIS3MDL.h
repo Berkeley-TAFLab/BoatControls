@@ -8,4 +8,3 @@ void setup_lis3mdl(); // Setup function for magnetometer
 float get_heading_lis3mdl(); // Calculate heading based on read values
 
 void read_lis3mdl(); // Call to start a reading 
-
