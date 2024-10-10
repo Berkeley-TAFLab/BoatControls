@@ -1,6 +1,11 @@
 #include <Arduino.h>
 #include <ESP32Servo.h>
 #include <cmath>
+#include <TAF_AS5600.h>
+#include <TAF_GTU7.h>
+#include <TAF_LIS3MDL.h>
+#include <TAF_MPU6050.h>
+#include <Boat_steer.h>
 
 // External servos defined in Boat_main
 extern Servo tailServo;
@@ -92,8 +97,70 @@ void manual_steer() {
     }
 }
 
+void calculate_bearing(float curr_lat, float curr_long, float tar_lat, float tar_long)
+{
+    
+    //Converting to radians
+    float curr_lat_rad = radians(curr_lat)
+    float curr_long_rad = radians(curr_long)
+    float tar_lat_rad = radians(tar_lat)
+    float tar_long_rad = radians(tar_long)
+
+    // Calculate the difference in longitudes
+    float longitude_distance = curr_long_rad - tar_long_rad;
+    
+    // Bearing formula obtained from https://www.igismap.com/formula-to-find-bearing-or-heading-angle-between-two-points-latitude-longitude/
+    float y = sin(longitude_distance) * cos(rad_lat2);
+    float x = cos(curr_lat_rad) * sin(tar_lat_rad) - sin(curr_lat_rad) * cos(tar_lat_rad) * cos(longitude_distance);
+    float bearing = atan2(y, x);
+    
+    // Convert bearing from radians to degrees
+    bearing = degrees(bearing);
+    
+    // Normalize to 0-360 degrees
+    while (bearing < 0) 
+    {
+        bearing += 360;
+    }
+    return bearing;
+}
+
 void auto_steer() {
     // Implement auto-steering logic here
     // This function should calculate desired positions based on sensor data
     // and then use the manual_steer() function to move the servos
+
+    // Get relevant data from sensors
+    float heading = get_heading_lis3mdl();
+    float latitude , longitude = get_gtu7_lat(),get_gtu7_long();
+    winddirection = get_avg_angle();
+    float desired_latitude,float desired_longitude = 42.866906 , -126.210938,
+
+    //Determine if boat needs to head up wind
+
+
+    // Calculate the desired heading to the target location
+    float desired_heading = calculate_bearing(latitude, longitude, desired_latitude, desired_longitude);
+
+    // Determine if the boat needs to head upwind or downwind
+    float angle_to_wind = abs(wind_direction - desired_heading);
+    
+    if (angle_to_wind > 180) 
+    {
+        angle_to_wind = 360 - angle_to_wind;
+    }
+    // Check to see if tacking is required (when boat needs to head more than 45 degrees upwind)
+    if (angle_to_wind <= 45) 
+    {
+        
+
+        //TODO: Implement Auto Steering Upwind
+        auto_steer_upwind();
+        
+    }else 
+    {
+
+        // Downwind or crosswind - no tacking needed
+        auto_steer_downwind();
+    }
 }
