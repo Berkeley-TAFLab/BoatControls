@@ -97,32 +97,50 @@ void manual_steer() {
     }
 }
 
-void calculate_bearing(float curr_lat, float curr_long, float tar_lat, float tar_long)
-{
-    
-    //Converting to radians
-    float curr_lat_rad = radians(curr_lat)
-    float curr_long_rad = radians(curr_long)
-    float tar_lat_rad = radians(tar_lat)
-    float tar_long_rad = radians(tar_long)
 
-    // Calculate the difference in longitudes
-    float longitude_distance = curr_long_rad - tar_long_rad;
-    
-    // Bearing formula obtained from https://www.igismap.com/formula-to-find-bearing-or-heading-angle-between-two-points-latitude-longitude/
-    float y = sin(longitude_distance) * cos(rad_lat2);
-    float x = cos(curr_lat_rad) * sin(tar_lat_rad) - sin(curr_lat_rad) * cos(tar_lat_rad) * cos(longitude_distance);
-    float bearing = atan2(y, x);
-    
-    // Convert bearing from radians to degrees
-    bearing = degrees(bearing);
-    
-    // Normalize to 0-360 degrees
-    while (bearing < 0) 
+
+
+void auto_steer_rudder_upwind(float bearing) \
+{
+    // Get the current boat heading (from compass or GPS)
+    float current_heading = get_heading_lis3mdl();
+
+    while(bearing> 5 or bearing<-5)
     {
-        bearing += 360;
+    if(bearing > 5) 
+    {
+        // Move at 50 degrees to the wind
+        // TODO: Check this is the correct way to move the rudder
+        manual_steer(50); 
+    } else(bearing < -5) 
+    {
+        //TODO: Check this is the correct way to move the rudder
+        manual_steer(-10);
     }
-    return bearing;
+
+    calculate_bearing();
+    }
+}
+
+void auto_steer_rudder_downwind(float bearing) {
+    // Get the current boat heading (from compass or GPS)
+    float current_heading = get_heading_lis3mdl();
+
+    while(bearing> 5 or bearing<-5)
+    {
+
+    if(bearing > 5) 
+    {
+        //TODO: Check this is the correct way to move the rudder
+        manual_steer(10); 
+    } else(bearing < -5) 
+    {
+        //TODO: Check this is the correct way to move the rudder
+        manual_steer(-10);
+    }
+
+    calculate_bearing();
+    }
 }
 
 void auto_steer() {
@@ -134,10 +152,9 @@ void auto_steer() {
     float heading = get_heading_lis3mdl();
     float latitude , longitude = get_gtu7_lat(),get_gtu7_long();
     winddirection = get_avg_angle();
+
+    //TODO: Find out how target coordinates are found
     float desired_latitude,float desired_longitude = 42.866906 , -126.210938,
-
-    //Determine if boat needs to head up wind
-
 
     // Calculate the desired heading to the target location
     float desired_heading = calculate_bearing(latitude, longitude, desired_latitude, desired_longitude);
@@ -145,22 +162,19 @@ void auto_steer() {
     // Determine if the boat needs to head upwind or downwind
     float angle_to_wind = abs(wind_direction - desired_heading);
     
-    if (angle_to_wind > 180) 
+    if(angle_to_wind > 180) 
     {
         angle_to_wind = 360 - angle_to_wind;
     }
     // Check to see if tacking is required (when boat needs to head more than 45 degrees upwind)
-    if (angle_to_wind <= 45) 
+    if(angle_to_wind <= 45) 
     {
         
-
-        //TODO: Implement Auto Steering Upwind
+        //TODO: Implement Auto Steering Upwind (will require tacking)
         auto_steer_upwind();
         
     }else 
     {
-
-        // Downwind or crosswind - no tacking needed
         auto_steer_downwind();
     }
 }
