@@ -56,12 +56,12 @@ void read_gtu7(){
         updated_val = true;
     }
 
-    if (gps.location.isValid())
-    {
-        Serial.print(gps.location.lat(), 6);
-        Serial.print(F(","));
-        Serial.print(gps.location.lng(), 6);
-    }
+    // if (gps.location.isValid())
+    // {
+    //     Serial.print(gps.location.lat(), 6);
+    //     Serial.print(F(","));
+    //     Serial.print(gps.location.lng(), 6);
+    // }
 }
 
 float get_gtu7_lat(){

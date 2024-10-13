@@ -45,6 +45,11 @@ const float lis3mdl_soft_iron_vals[3][3] = {
     {0.003 , 0.004 , 0.962}
 }; 
 
+//Calibration value for the sail servo.  
+#define SAIL_CAL_VAL 0.6667f
+//Calibration value for the rudder servo.
+#define RUDDER_CAL_VAL 0.6667f
+
 //Values related to RF 433MHz transmission 
 #define CP_ID 0x00 //Value of the control panel ID
 #define RF_ID 0x01 // This value will change as more devices are added

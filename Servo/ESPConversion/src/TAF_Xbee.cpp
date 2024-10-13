@@ -94,6 +94,11 @@ bool receive_xbee(uint8_t* buffer, size_t* length, uint64_t* source_address, uin
     while (Xbee_Serial.available() < 2) {}
     uint16_t frame_length = Xbee_Serial.read() << 8 | Xbee_Serial.read();
 
+    if (frame_length > 255) {
+        Serial.println("Frame length exceeds maximum allowed size");
+        return false;
+    }
+
     // Prepare to read frame data
     uint8_t frame_data[frame_length + 1];  // +1 for checksum
     size_t index = 0;
@@ -142,7 +147,7 @@ bool receive_xbee(uint8_t* buffer, size_t* length, uint64_t* source_address, uin
 //Parses xbee message based on our currently defined message structure
 void parse_xbee_msg(uint8_t* data_buffer,size_t length){
     //Assert the message is of proper length. Nothing should be less than 2
-    if(length < 2){
+    if(length < 2 || length > 255){
         return;
     }
 
@@ -161,7 +166,7 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
                 }
             }
 
-            Serial.println("State Trans msg received");
+            // Serial.println("State Trans msg received");
             break;
         case STEER_CTRL_MSG: {
             if(get_curr_state() == MANUAL && length >=3 ){
@@ -170,7 +175,7 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
                 set_sail_servo(sail_position);
                 set_rudder_servo(rudder_position);
             }
-            Serial.println("Steer msg received");
+            // Serial.println("Steer msg received");
             break;
         }
 
@@ -178,13 +183,13 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
             if(get_curr_state() == MANUAL && length >=5){
 
             }
-            Serial.println("Set Long msg received");
+            // Serial.println("Set Long msg received");
             break;
         case SET_LAT_MSG:
             if(get_curr_state() == MANUAL){
 
             }
-            Serial.println("Set Lat msg received");
+            // Serial.println("Set Lat msg received");
             break;
         case POLL_LONG_MSG:{
             uint8_t payload[5]; 
@@ -192,7 +197,7 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
             float curr_long = get_gtu7_long();
             compress_long(curr_long, payload+1); 
             transmit_xbee(payload, sizeof(payload));
-            Serial.println("Poll Long msg received");
+            // Serial.println("Poll Long msg received");
             break;
         } 
         case POLL_LAT_MSG:{
@@ -201,22 +206,22 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
             float curr_long = get_gtu7_lat();
             compress_long(curr_long, payload+1); 
             transmit_xbee(payload, sizeof(payload));
-            Serial.println("Poll lat msg received");
+            // Serial.println("Poll lat msg received");
             break;
         }
 
         case POLL_STATE_MSG:{
             uint8_t payload[] = {SEND_STATUS_MSG, get_curr_state()}; 
             transmit_xbee(payload, sizeof(payload));
-            Serial.println("Poll state msg received");
+            // Serial.println("Poll state msg received");
             break;
         }
             
     }
 
-    for (size_t i = 0; i < length; i++)
-    {
-      Serial.print(data_buffer[i], HEX);
-    }
-    Serial.println();
+    // for (size_t i = 0; i < length; i++)
+    // {
+    //   Serial.print(data_buffer[i], HEX);
+    // }
+    // Serial.println();
 }
