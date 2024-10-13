@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "vector": "cpp"
-    },
-    "idf.port": "/dev/tty.usbserial-0001"
-}
