@@ -6,6 +6,7 @@
 #include <TAF_LIS3MDL.h>
 #include <TAF_MPU6050.h>
 #include <Boat_steer.h>
+#include "constants.h"
 
 // External servos defined in Boat_main
 extern Servo tailServo;
@@ -89,11 +90,17 @@ void manual_steer() {
     }
 
     if (local_desired_sail != curr_sail_position) {
-        move_servo(sailServo, curr_sail_position, local_desired_sail);
+        uint8_t target_sail = (uint8_t)(local_desired_sail * SAIL_CAL_VAL);
+        Serial.print("Desired Rudder position: ");
+        Serial.println(target_sail);
+        move_servo(sailServo, curr_sail_position, target_sail);
     }
 
-    if (local_desired_rudder != curr_rudder_position) {
-        move_servo(tailServo, curr_rudder_position, local_desired_rudder);
+    if (local_desired_rudder != curr_rudder_position) { 
+        uint8_t target_rudder = (uint8_t)(local_desired_rudder * RUDDER_CAL_VAL);
+        Serial.print("Desired Rudder position: ");
+        Serial.println(target_rudder);
+        move_servo(tailServo, curr_rudder_position, target_rudder);
     }
 }
 

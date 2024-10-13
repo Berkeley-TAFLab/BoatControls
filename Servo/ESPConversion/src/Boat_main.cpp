@@ -51,18 +51,18 @@ void steering_task(void* parameter){
         SM_States curr_state = get_curr_state();
         switch (curr_state){
             case IDLE:
-                Serial.println("Currently Idling... Do Nothing");
+                // Serial.println("Currently Idling... Do Nothing");
                 break;
             case MANUAL: 
                 manual_steer();
-                Serial.println("Currently in Manual controls...");
+                // Serial.println("Currently in Manual controls...");
                 break;
             case AUTO:
                 auto_steer();
-                Serial.println("Currently in Auto mode");
+                // Serial.println("Currently in Auto mode");
                 break;
             default:
-                Serial.println("Unknown Command...");
+                // Serial.println("Unknown Command...");
                 break; 
         } 
 
@@ -86,7 +86,7 @@ void user_input_task(void* parameter){
             }
             if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
             {
-                Serial.println("received message");
+                // Serial.println("received message");
                 parse_xbee_msg(receive_buffer, receive_length);
                 trans_com(CONNECTED);
             }
@@ -100,7 +100,7 @@ void user_input_task(void* parameter){
             if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
             {
                 watchdog = 0;
-                Serial.println("received message");
+                // Serial.println("received message");
                 parse_xbee_msg(receive_buffer, receive_length);
 
             //After USER_INPUT_Delay * 30 has elapsed and no response from GUI, we will go back 
