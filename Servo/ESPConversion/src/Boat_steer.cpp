@@ -6,6 +6,9 @@
 #include <TAF_LIS3MDL.h>
 #include <TAF_MPU6050.h>
 #include <Boat_steer.h>
+#include <Coordinate_Calculations.h>
+#include "WaypointQueue.hpp"
+#include "DataTypes.hpp"
 
 // External servos defined in Boat_main
 extern Servo tailServo;
@@ -139,7 +142,7 @@ void auto_steer_rudder_downwind(float bearing) {
         manual_steer(-10);
     }
 
-    calculate_bearing();
+    CoordinateCalcuations::calculate_bearing();
     }
 }
 
@@ -150,14 +153,15 @@ void auto_steer() {
 
     // Get relevant data from sensors
     float heading = get_heading_lis3mdl();
-    float latitude , longitude = get_gtu7_lat(),get_gtu7_long();
+    DataTypes::Coordinate current_position = get_gtu7_lat(),get_gtu7_long();
     winddirection = get_avg_angle();
 
-    //TODO: Find out how target coordinates are found
-    float desired_latitude,float desired_longitude = 42.866906 , -126.210938,
+    //Init Waypoint Queue
+    WaypointQueue::initialize_autonomous_mode();
+    
 
     // Calculate the desired heading to the target location
-    float desired_heading = calculate_bearing(latitude, longitude, desired_latitude, desired_longitude);
+    float desired_heading = CoordinateCalcuations::calculate_bearing(current_position, target_position);
 
     // Determine if the boat needs to head upwind or downwind
     float angle_to_wind = abs(wind_direction - desired_heading);

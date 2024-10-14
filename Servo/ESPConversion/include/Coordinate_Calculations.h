@@ -7,26 +7,19 @@
 #define TACKING_PATH_PLANNER_H
 
 #include <vector>
+#include "DataTypes.hpp"
 
 using namespace std;
 
-// Defining Coordinate Struct
-struct Coordinate {
-    float latitude;
-    float longitude;
-};
-
 // Class Definition
-class TackingPathPlanner {
+class CoordinateCalcuations {
 public:
-    TackingPathPlanner(float wind_direction);
-
-
+    
     float calculate_optimal_sail_angle(float wind_direction);
-    float calculate_distance(Coordinate coord1, Coordinate coord2);
-    float calculate_bearing(Coordinate start, Coordinate end);
-    vector<Coordinate> plan_tack_path(Coordinate start, Coordinate destination);
-
+    Datatypes::Coordinate convert_to_position(Datatypes::Coordinate position, float angle, float distance);
+    float calculate_distance(Datatypes::Coordinate coord1, Datatypes::Coordinate coord2);
+    float calculate_bearing(Datatypes::Coordinate start, Datatypes::Coordinate end);
+    vector<Datatypes::Coordinate> plan_tack_path(Datatypes::Coordinate start, Datatypes::Coordinate destination);
 };
 
 #endif // TACKING_PATH_PLANNER_H
