@@ -6,12 +6,12 @@ from PySide6.QtGui import QPainter, QColor
 import csv
 from datetime import datetime, timedelta
 import math
+import struct
 
 class GraphsWindow(QWidget):
-    def __init__(self, scrollable_table_widget):
+    def __init__(self, main_window):
         super().__init__()
-        self.scrollable_table_widget = scrollable_table_widget
-        self.table_widget = scrollable_table_widget.table_widget
+        self.main_window = main_window
         self.layout = QVBoxLayout(self)
         self.device_selector = None
         self.charts = {}
@@ -83,10 +83,8 @@ class GraphsWindow(QWidget):
         chart.setAnimationOptions(QChart.NoAnimation)
         chart.legend().hide()
 
-        axis_x = QDateTimeAxis()
-        axis_x.setTickCount(6)
-        axis_x.setFormat("mm:ss")
-        axis_x.setTitleText("Time")
+        axis_x = QValueAxis()
+        axis_x.setTitleText("Time (seconds)")
         chart.addAxis(axis_x, Qt.AlignBottom)
 
         axis_y = QValueAxis()
@@ -106,8 +104,8 @@ class GraphsWindow(QWidget):
 
         chart_view = QChartView(chart)
         chart_view.setRenderHint(QPainter.Antialiasing)
-        chart_view.setMinimumHeight(300)  # Increased minimum height
-        chart_view.setMinimumWidth(400)   # Added minimum width
+        chart_view.setMinimumHeight(300)
+        chart_view.setMinimumWidth(400)
 
         self.charts[attribute] = chart
         self.chart_views[attribute] = chart_view
@@ -121,28 +119,23 @@ class GraphsWindow(QWidget):
         series = self.series[attribute]
         axis_x = chart.axes(Qt.Horizontal)[0]
         axis_y = chart.axes(Qt.Vertical)[0]
-
-        column = ["Longitude", "Latitude", "Heading"].index(attribute) + 3
-        current_time = QDateTime.currentDateTime()
         
         # Clear previous data
         series.clear()
         
-        for row in range(self.table_widget.rowCount()):
-            if self.table_widget.item(row, 0).text() == device:
-                item = self.table_widget.item(row, column)
-                if item and item.text():
-                    try:
-                        value = float(item.text())
-                        if math.isfinite(value):
-                            time_diff = self.start_time.msecsTo(current_time) / 1000.0  # Convert to seconds
-                            series.append(time_diff, value)
-                    except ValueError:
-                        print(f"Could not convert to float: {item.text()}")
+        current_time = QDateTime.currentDateTime()
+        elapsed_time = self.start_time.msecsTo(current_time) / 1000.0  # Total elapsed time in seconds
+        
+        # Fetch data from UART messages
+        data = self.get_data_from_uart(device, attribute)
+        
+        for timestamp, value in data:
+            time_diff = self.start_time.msecsTo(timestamp) / 1000.0  # Time difference in seconds
+            series.append(time_diff, value)
 
         if series.count() > 0:
             min_x = 0
-            max_x = self.start_time.msecsTo(current_time) / 1000.0
+            max_x = elapsed_time
             
             # Set fixed y-axis range based on attribute
             if attribute == "Heading":
@@ -158,22 +151,48 @@ class GraphsWindow(QWidget):
                 min_y -= 0.1 * range_y
                 max_y += 0.1 * range_y
 
-            axis_x.setRange(self.start_time, current_time)
+            axis_x.setRange(min_x, max_x)
             axis_y.setRange(min_y, max_y)
 
             # Adjust x-axis scale
-            time_range = max_x - min_x
-            if time_range <= 60:
+            if max_x <= 60:
                 axis_x.setTickCount(7)  # Show tick every 10 seconds
-                axis_x.setFormat("ss")
-            elif time_range <= 300:
+            elif max_x <= 300:
                 axis_x.setTickCount(6)  # Show tick every minute
-                axis_x.setFormat("mm:ss")
             else:
                 axis_x.setTickCount(7)  # Show tick every 5 minutes
-                axis_x.setFormat("hh:mm")
 
         chart.setTitle(f"{attribute} vs Time for {device}")
+
+    def get_data_from_uart(self, device, attribute):
+        data = []
+        messages = self.main_window.uart_handler.get_messages_for_device(device)
+        
+        for message in messages:
+            timestamp = message['timestamp']
+            parsed_data = bytes.fromhex(message['data'])
+            
+            if len(parsed_data) < 2:
+                continue
+            
+            message_type = parsed_data[0]
+            payload = parsed_data[1:]
+            
+            if (attribute == "Longitude" and message_type == 0x09) or \
+               (attribute == "Latitude" and message_type == 0x0A) or \
+               (attribute == "Heading" and message_type == 0x0B):
+                try:
+                    if message_type in [0x09, 0x0A]:  # Longitude and Latitude
+                        int_value = struct.unpack('!i', payload[:4])[0]
+                        float_value = int_value / 100000.0
+                    elif message_type == 0x0B:  # Heading
+                        float_value = struct.unpack('!f', payload[:4])[0]
+                    
+                    data.append((timestamp, float_value))
+                except struct.error:
+                    print(f"Error parsing data for message type {message_type}")
+        
+        return data
 
     def remove_chart(self, attribute):
         if attribute in self.charts:
@@ -183,62 +202,13 @@ class GraphsWindow(QWidget):
             del self.chart_views[attribute]
             del self.series[attribute]
 
-    def update_single_graph(self, chart, device, attribute):
-        series = self.series[attribute]
-        axis_x = chart.axes(Qt.Horizontal)[0]
-        axis_y = chart.axes(Qt.Vertical)[0]
-
-        column = ["Longitude", "Latitude", "Heading"].index(attribute) + 3
-        current_time = QDateTime.currentDateTime()
-        
-        for row in range(self.table_widget.rowCount()):
-            if self.table_widget.item(row, 0).text() == device:
-                item = self.table_widget.item(row, column)
-                if item and item.text():
-                    try:
-                        value = float(item.text())
-                        if math.isfinite(value):
-                            time_diff = self.start_time.msecsTo(current_time) / 1000.0  # Convert to seconds
-                            series.append(time_diff, value)
-                    except ValueError:
-                        print(f"Could not convert to float: {item.text()}")
-
-        if series.count() > 0:
-            min_x = self.start_time.msecsTo(self.start_time) / 1000.0
-            max_x = self.start_time.msecsTo(current_time) / 1000.0
-            min_y = min(point.y() for point in series.points())
-            max_y = max(point.y() for point in series.points())
-            range_y = max_y - min_y
-
-            axis_x.setRange(self.start_time, current_time)
-            axis_y.setRange(min_y - 0.1 * range_y, max_y + 0.1 * range_y)
-
-            # Adjust x-axis scale
-            time_range = max_x - min_x
-            if time_range <= 60:
-                axis_x.setTickCount(7)  # Show tick every 10 seconds
-                axis_x.setFormat("ss")
-            elif time_range <= 300:
-                axis_x.setTickCount(6)  # Show tick every minute
-                axis_x.setFormat("mm:ss")
-            else:
-                axis_x.setTickCount(7)  # Show tick every 5 minutes
-                axis_x.setFormat("hh:mm")
-
-        chart.setTitle(f"{attribute} vs Time for {device}")
-
     @Slot()
     def update_graph_visibility(self):
         self.update_graphs()
 
     def update_device_list(self):
-        current_devices = set()
-        for row in range(self.table_widget.rowCount()):
-            item = self.table_widget.item(row, 0)
-            if item and item.text():
-                device = item.text()
-                current_devices.add(device)
-
+        current_devices = set(self.main_window.uart_handler.get_device_list())
+        
         for device in current_devices:
             if self.device_selector.findText(device) == -1:
                 self.device_selector.addItem(device)
@@ -273,13 +243,18 @@ class GraphsWindow(QWidget):
             return
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        for row in range(self.table_widget.rowCount()):
-            device = self.table_widget.item(row, 0).text()
-            longitude = self.table_widget.item(row, 3).text() if self.table_widget.item(row, 3) else ''
-            latitude = self.table_widget.item(row, 4).text() if self.table_widget.item(row, 4) else ''
-            heading = self.table_widget.item(row, 5).text() if self.table_widget.item(row, 5) else ''
+        for device in self.main_window.uart_handler.get_device_list():
+            longitude = self.get_latest_value(device, "Longitude")
+            latitude = self.get_latest_value(device, "Latitude")
+            heading = self.get_latest_value(device, "Heading")
             
             self.csv_writer.writerow([timestamp, device, longitude, latitude, heading])
+
+    def get_latest_value(self, device, attribute):
+        data = self.get_data_from_uart(device, attribute)
+        if data:
+            return data[-1][1]  # Return the latest value
+        return ''
 
     def closeEvent(self, event):
         self.stop_recording()

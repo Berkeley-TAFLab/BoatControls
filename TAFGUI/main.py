@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                                QHBoxLayout, QSplitter, QToolBar, QStackedWidget, QInputDialog)
-from PySide6.QtCore import Qt, QThread, Signal, Slot, QUrl, QTimer
+from PySide6.QtCore import Qt, QThread, Signal, Slot, QUrl, QTimer, QDateTime
 from PySide6.QtGui import QAction
 from PySide6.QtQuickWidgets import QQuickWidget
 from scrollable_table import ScrollableTableWidget
@@ -24,7 +24,8 @@ class UARTHandler(QThread):
         self.baud_rate = baud_rate
         self.running = True
         self.serial = None
-        self.buffer = bytearray()
+        self.buffer = bytearray() 
+        self.messages = {}
 
     def run(self):
         print("Attempting to receive data")
@@ -101,11 +102,20 @@ class UARTHandler(QThread):
             # Remove processed frame from buffer
             self.buffer = self.buffer[length+4:]
 
-            return {
+            message = {
+                'timestamp': QDateTime.currentDateTime(),
                 'source_address': ':'.join(f'{b:02X}' for b in source_address),
                 'source_network_address': f'{source_network_address[0]:02X}{source_network_address[1]:02X}',
                 'data': received_data.hex()
             }
+            
+            if message['source_address'] not in self.messages:
+                self.messages[message['source_address']] = []
+            self.messages[message['source_address']].append(message)
+            
+            return message
+        
+        
         else:
             self.buffer = self.buffer[length+4:]
             return None
@@ -114,6 +124,12 @@ class UARTHandler(QThread):
         self.running = False
         if self.serial and self.serial.is_open:
             self.serial.close()
+
+    def get_messages_for_device(self, device):
+        return self.messages.get(device, [])
+
+    def get_device_list(self):
+        return list(self.messages.keys())
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -240,7 +256,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(window)
         
     def create_window2(self):
-        self.graphs_window = GraphsWindow(self.table_widget)  # Pass the ScrollableTableWidget
+        self.graphs_window = GraphsWindow(self)  # Pass self (MainWindow) instead of self.table_widget
         self.stacked_widget.addWidget(self.graphs_window)
 
     def create_toolbar_actions(self):
