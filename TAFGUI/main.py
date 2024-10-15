@@ -6,6 +6,7 @@ from PySide6.QtGui import QAction
 from PySide6.QtQuickWidgets import QQuickWidget
 from scrollable_table import ScrollableTableWidget
 from controlbar import ControlBar
+from graph_window import GraphsWindow  
 import serial
 import serial.tools.list_ports
 import time
@@ -180,12 +181,20 @@ class MainWindow(QMainWindow):
     @Slot(dict)
     def process_serial_message(self, message):
         print(f"\nReceived XBee message from {message['source_address']} "
-              f"(Network: {message['source_network_address']}):")
+            f"(Network: {message['source_network_address']}):")
         print(f"Data (hex): {message['data']}")
         
-        # Update table if window1 is active
-        if self.stacked_widget.currentIndex() == 0:
-            self.table_widget.update_table(message)  # Pass the entire message dictionary
+        # Update table
+        self.table_widget.update_table(message)
+        
+        # Update graphs
+        if hasattr(self, 'graphs_window'):
+            self.graphs_window.update_device_list()
+            self.graphs_window.update_graphs()
+        
+        # Record data if recording is active
+        if hasattr(self, 'graphs_window') and self.graphs_window.recording:
+            self.graphs_window.record_data()
 
     def send_uart_message(self, message):
         print("Transmitting uart message")
@@ -231,11 +240,8 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(window)
         
     def create_window2(self):
-        window = QWidget()
-        layout = QVBoxLayout(window)
-        layout.addWidget(QWidget())  # Placeholder, replace with your content
-        layout.addWidget(QWidget())  # Placeholder, replace with your content
-        self.stacked_widget.addWidget(window)
+        self.graphs_window = GraphsWindow(self.table_widget)  # Pass the ScrollableTableWidget
+        self.stacked_widget.addWidget(self.graphs_window)
 
     def create_toolbar_actions(self):
         action1 = QAction("Trace", self)
@@ -295,6 +301,9 @@ class MainWindow(QMainWindow):
             print(f"Sending poll message to {dest_address} ({network_address})")
             print(f"Frame (hex): {frame.hex()}")
             self.send_uart_message(frame)
+    def update_graphs_device_list(self):
+        if hasattr(self, 'graphs_window'):
+            self.graphs_window.update_device_list() 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

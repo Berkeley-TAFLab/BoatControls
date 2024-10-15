@@ -54,10 +54,12 @@ class ScrollableTableWidget(QWidget):
             if message_type == 0x08:  # Receive Status
                 self.table_widget.setItem(row, 2, QTableWidgetItem(f"{parsed_data[0]}"))
             elif message_type == 0x09:  # Receive Longitude
-                float_value = struct.unpack('!f', parsed_data[:4])[0]
+                int_value = struct.unpack('!i', parsed_data[:4])[0]
+                float_value = int_value / 100000.0
                 self.table_widget.setItem(row, 3, QTableWidgetItem(f"{float_value:.5f}"))
             elif message_type == 0x0A:  # Receive Latitude
-                float_value = struct.unpack('!f', parsed_data[:4])[0]
+                int_value = struct.unpack('!i', parsed_data[:4])[0]
+                float_value = int_value / 100000.0
                 self.table_widget.setItem(row, 4, QTableWidgetItem(f"{float_value:.5f}"))
             elif message_type == 0x0B:  # Receive Heading
                 float_value = struct.unpack('!f', parsed_data[:4])[0]
