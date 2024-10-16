@@ -28,6 +28,7 @@ private:
     mutex queue_mutex;
     condition_variable queue_condition;
     bool autonomous_mode = false;
+    bool running = false;
 };
 
 #endif // WAYPOINTQUEUE_HPP

@@ -7,7 +7,8 @@
 #define DATATYPES_HPP
 
 namespace Datatypes {
-    // Structure Definitions
+    
+    //System used to define coordinates using latitude and longitude
     struct Coordinate {
         float latitude;
         float longitude;

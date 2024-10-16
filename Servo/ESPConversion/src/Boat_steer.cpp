@@ -147,14 +147,12 @@ void auto_steer_rudder_downwind(float bearing) {
 }
 
 void auto_steer() {
-    // Implement auto-steering logic here
-    // This function should calculate desired positions based on sensor data
-    // and then use the manual_steer() function to move the servos
+    //Need to trigger this function when Auto mode is set
 
     // Get relevant data from sensors
     float heading = get_heading_lis3mdl();
     DataTypes::Coordinate current_position = get_gtu7_lat(),get_gtu7_long();
-    winddirection = get_avg_angle();
+    winddirection = get_avgF_angle();
 
     //Init Waypoint Queue
     WaypointQueue::initialize_autonomous_mode();
@@ -162,6 +160,7 @@ void auto_steer() {
 
     // Calculate the desired heading to the target location
     float desired_heading = CoordinateCalcuations::calculate_bearing(current_position, target_position);
+
 
     // Determine if the boat needs to head upwind or downwind
     float angle_to_wind = abs(wind_direction - desired_heading);

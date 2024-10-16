@@ -58,8 +58,10 @@ void steering_task(void* parameter){
                 Serial.println("Currently in Manual controls...");
                 break;
             case AUTO:
-                auto_steer();
-                Serial.println("Currently in Auto mode");
+                while(curr_state == AUTO){
+                    Serial.println("Currently in Auto mode");
+                    auto_steer();
+                }
                 break;
             default:
                 Serial.println("Unknown Command...");
@@ -183,5 +185,3 @@ void main_setup(){
 
     delay(1000); //Delay necessary in order to finish setting up peripherals
 }
-
-
