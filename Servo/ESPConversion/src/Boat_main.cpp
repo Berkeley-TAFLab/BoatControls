@@ -13,6 +13,7 @@
 #include "TAF_GTU7.h"
 #include "TAF_Xbee.h"
 #include "Boat_steer.h"
+#include "WaypointQueue.hpp"
 
 //Private user defines. These will likely be used by sensors in their respective source files
 HardwareSerial Gps_Serial(1); //Variable used by the GPS
@@ -45,6 +46,7 @@ void water_detection_task(void* parameter){
 }
 
 
+//TODO: Test this to make sure not infinite loop
 void steering_task(void* parameter){
     while(1){
         //TODO: Finish the steering task. This should already mainly exist somewhere  
@@ -58,10 +60,13 @@ void steering_task(void* parameter){
                 Serial.println("Currently in Manual controls...");
                 break;
             case AUTO:
-                while(curr_state == AUTO){
+                while(curr_state == AUTO)
+                {
                     Serial.println("Currently in Auto mode");
                     auto_steer();
                 }
+                // Resetting Local Variables
+                WaypointQueue::close_autonomous_mode();
                 break;
             default:
                 Serial.println("Unknown Command...");

@@ -14,12 +14,12 @@ using namespace std;
 // Class Definition
 class CoordinateCalcuations {
 public:
-    
     float calculate_optimal_sail_angle(float wind_direction);
     Datatypes::Coordinate convert_to_position(Datatypes::Coordinate position, float angle, float distance);
     float calculate_distance(Datatypes::Coordinate coord1, Datatypes::Coordinate coord2);
     float calculate_bearing(Datatypes::Coordinate start, Datatypes::Coordinate end);
     vector<Datatypes::Coordinate> plan_tack_path(Datatypes::Coordinate start, Datatypes::Coordinate destination);
+    
 private:
     static const unsigned int max_upwind_angle = 45;
 };

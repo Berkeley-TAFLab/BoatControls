@@ -16,12 +16,13 @@ using namespace std;
 
 class WaypointQueue {
 public:
-    void add_waypoint(Datatypes::Coordinate waypoint);
-    Datatypes::Coordinate get_next_waypoint();
-    bool is_empty() const;
-    void clear_queue();
     void initialize_autonomous_mode();
+    Datatypes::Coordinate get_next_waypoint();
+    void add_waypoint(Datatypes::Coordinate waypoint);
+    void clear_queue();
+    bool is_empty() const;
     void execute_waypoints();
+    void close_autonomous_mode();
 
 private:
     queue<Datatypes::Coordinate> waypoints;
@@ -29,6 +30,8 @@ private:
     condition_variable queue_condition;
     bool autonomous_mode = false;
     bool running = false;
+    thread execution_thread;
+    Datatypes::Coordinate previous_waypoint;
 };
 
 #endif // WAYPOINTQUEUE_HPP

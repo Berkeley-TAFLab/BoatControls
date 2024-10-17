@@ -5,6 +5,7 @@
 
 //User defined libraries and headers
 #include "TAF_GTU7.h" 
+#include "DataTypes.hpp"
 
 //User defined private variables
 TinyGPSPlus gps;
@@ -73,6 +74,11 @@ float get_gtu7_lat(){
         Serial.println("Possible deadlock on latitude");
     }
     return curr_lat;
+}
+
+Datatypes::Coordinate get_curr_coordinate()
+{
+    return {get_gtu7_lat(),get_gtu7_long()};
 }
 
 float get_gtu7_long(){

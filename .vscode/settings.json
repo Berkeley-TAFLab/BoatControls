@@ -1,5 +1,13 @@
 {
     "files.associations": {
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "*.tcc": "cpp",
+        "compare": "cpp",
+        "memory_resource": "cpp",
+        "limits": "cpp",
+        "mutex": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "tuple": "cpp"
     }
 }
