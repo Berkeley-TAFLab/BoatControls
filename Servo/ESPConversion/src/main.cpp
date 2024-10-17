@@ -27,7 +27,7 @@ void setup() {
   xTaskCreatePinnedToCore(
     user_input_task, 
     "User Input",
-    4096, 
+    8192, 
     NULL,
     USER_INPUT_PRIO,
     NULL,

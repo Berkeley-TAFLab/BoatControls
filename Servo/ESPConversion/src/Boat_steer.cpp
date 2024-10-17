@@ -6,6 +6,7 @@
 #include <TAF_LIS3MDL.h>
 #include <TAF_MPU6050.h>
 #include <Boat_steer.h>
+#include "constants.h"
 #include <Coordinate_Calculations.h>
 #include "WaypointQueue.hpp"
 #include "DataTypes.hpp"
@@ -22,7 +23,10 @@ uint8_t desired_sail_position;
 static SemaphoreHandle_t rudder_sem;
 uint8_t desired_rudder_position;
 
+static SemaphoreHandle_t curr_sail_sem;
 uint8_t curr_sail_position;
+
+static SemaphoreHandle_t curr_rudder_sem;
 uint8_t curr_rudder_position;
 
 // Constants for cubic motion
@@ -36,6 +40,8 @@ void setup_steer() {
     curr_rudder_position = 0;
     sail_sem = xSemaphoreCreateMutex();
     rudder_sem = xSemaphoreCreateMutex();
+    curr_sail_sem = xSemaphoreCreateMutex(); 
+    curr_rudder_sem = xSemaphoreCreateMutex();
 }
 
 void set_sail_servo(uint8_t position) {
@@ -92,13 +98,28 @@ void manual_steer() {
     }
 
     if (local_desired_sail != curr_sail_position) {
-        move_servo(sailServo, curr_sail_position, local_desired_sail);
+        uint8_t target_sail = (uint8_t)(local_desired_sail * SAIL_CAL_VAL);
+        Serial.print("Desired Rudder position: ");
+        Serial.println(target_sail);
+
+        if (xSemaphoreTake(curr_sail_sem, 5000) == true) {
+            move_servo(sailServo, curr_sail_position, target_sail);
+            xSemaphoreGive(curr_sail_sem);
+        }
     }
 
-    if (local_desired_rudder != curr_rudder_position) {
-        move_servo(tailServo, curr_rudder_position, local_desired_rudder);
+    if (local_desired_rudder != curr_rudder_position) { 
+        uint8_t target_rudder = (uint8_t)(local_desired_rudder * RUDDER_CAL_VAL);
+        Serial.print("Desired Rudder position: ");
+        Serial.println(target_rudder); 
+
+        if (xSemaphoreTake(curr_rudder_sem, 5000) == true) {
+            move_servo(sailServo, curr_sail_position, target_rudder);
+            xSemaphoreGive(curr_rudder_sem);
+        }
     }
 }
+
 
 void steering_boat(float bearing)
 {
@@ -106,6 +127,25 @@ void steering_boat(float bearing)
     float heading = get_heading_lis3mdl();
     
     
+
+uint8_t get_sail_position(){
+    uint8_t return_val = -1;
+    if (xSemaphoreTake(curr_sail_sem, 5000) == true) {
+        return_val = curr_sail_position;
+        xSemaphoreGive(curr_sail_sem);
+    }
+
+    return return_val;
+}
+
+uint8_t get_rudder_position(){
+    uint8_t return_val = -1;
+    if (xSemaphoreTake(curr_rudder_sem, 5000) == true) {
+        return_val = curr_rudder_position;
+        xSemaphoreGive(curr_rudder_sem);
+    }
+
+    return return_val;
 }
 
 void auto_steer()

@@ -45,6 +45,11 @@ const float lis3mdl_soft_iron_vals[3][3] = {
     {0.003 , 0.004 , 0.962}
 }; 
 
+//Calibration value for the sail servo.  
+#define SAIL_CAL_VAL 0.6667f
+//Calibration value for the rudder servo.
+#define RUDDER_CAL_VAL 0.6667f
+
 //Values related to RF 433MHz transmission 
 #define CP_ID 0x00 //Value of the control panel ID
 #define RF_ID 0x01 // This value will change as more devices are added
@@ -64,11 +69,16 @@ const float lis3mdl_soft_iron_vals[3][3] = {
 #define POLL_LONG_MSG 0x05 
 #define POLL_LAT_MSG 0x06 
 #define POLL_STATE_MSG 0x07 
+#define POLL_WINDVANE_MSG 0x0C 
+#define POLL_RS_MSG 0x0E 
 
 //Message types for Xbee transmissions. Boat to GUI 
 #define SEND_STATUS_MSG 0x08
 #define SEND_LONG_MSG 0X09
 #define SEND_LAT_MSG 0x0A
 #define SEND_HEAD_MSG 0x0B
+#define SEND_WINDVANE_MSG 0x0D 
+#define SEND_RS_MSG 0x0F 
+
 
 //Debugging variables to disable certain setup tasks or functions

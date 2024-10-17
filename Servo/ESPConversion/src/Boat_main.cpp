@@ -53,11 +53,11 @@ void steering_task(void* parameter){
         SM_States curr_state = get_curr_state();
         switch (curr_state){
             case IDLE:
-                Serial.println("Currently Idling... Do Nothing");
+                // Serial.println("Currently Idling... Do Nothing");
                 break;
             case MANUAL: 
                 manual_steer();
-                Serial.println("Currently in Manual controls...");
+                // Serial.println("Currently in Manual controls...");
                 break;
             case AUTO:
                 while(curr_state == AUTO)
@@ -69,7 +69,7 @@ void steering_task(void* parameter){
                 WaypointQueue::close_autonomous_mode();
                 break;
             default:
-                Serial.println("Unknown Command...");
+                // Serial.println("Unknown Command...");
                 break; 
         } 
 
@@ -93,7 +93,7 @@ void user_input_task(void* parameter){
             }
             if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
             {
-                Serial.println("received message");
+                // Serial.println("received message");
                 parse_xbee_msg(receive_buffer, receive_length);
                 trans_com(CONNECTED);
             }
@@ -107,7 +107,7 @@ void user_input_task(void* parameter){
             if (receive_xbee(receive_buffer, &receive_length, &source_address, &source_network_address))
             {
                 watchdog = 0;
-                Serial.println("received message");
+                // Serial.println("received message");
                 parse_xbee_msg(receive_buffer, receive_length);
 
             //After USER_INPUT_Delay * 30 has elapsed and no response from GUI, we will go back 
@@ -128,8 +128,9 @@ void user_input_task(void* parameter){
 //Collect readings from the imu, encoder, magnetometer,gps
 void sensor_readings_task(void* parameter){
     while(1){
-        read_wind_vane();
-        //Serial.println(get_avg_angle());
+        read_wind_vane(); 
+        Serial.print("Average Wind vane angle: ");
+        Serial.println(get_avg_angle());
         read_mpu6050();
         read_lis3mdl();
         read_gtu7(); 

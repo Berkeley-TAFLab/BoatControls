@@ -8,10 +8,14 @@ Control Panel to boat
 	0x04 - Set Latitude
 	0x05 - Poll Longitude 
 	0x06 - Poll Latitude 
-	0x07 - Poll State 
+	0x07 - Poll State
+    0x0C - Poll Windvane 
+    0x0E - Poll Sail & Rudder Direction
 
 Boat to Control Panel 
 	0x08 - Send Status 
 	0x09 - Send Longitude 
 	0x0A - Send Latitude 
 	0x0B - Send Heading 
+    0x0D - Send Windvane 
+    0x0F - Send Sail & Rudder Direction 
