@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "TAF_GTU7.h"
 #include "Boat_steer.h"
+#include "TAF_AS5600.h"
 
 
 extern HardwareSerial Xbee_Serial;
@@ -180,13 +181,13 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
         }
 
         case SET_LONG_MSG:
-            if(get_curr_state() == MANUAL && length >=5){
+            if(get_curr_state() == AUTO && length >=5){
 
             }
             // Serial.println("Set Long msg received");
             break;
         case SET_LAT_MSG:
-            if(get_curr_state() == MANUAL){
+            if(get_curr_state() == AUTO){
 
             }
             // Serial.println("Set Lat msg received");
@@ -214,6 +215,24 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
             uint8_t payload[] = {SEND_STATUS_MSG, get_curr_state()}; 
             transmit_xbee(payload, sizeof(payload));
             // Serial.println("Poll state msg received");
+            break;
+        } 
+
+        case POLL_WINDVANE_MSG:{
+            uint8_t payload[3]; 
+            uint16_t windvane_angle = get_avg_angle(); 
+
+            payload[0] = SEND_WINDVANE_MSG;
+            payload[1] = (windvane_angle >> 8) & 0xFF;
+            payload[2] = windvane_angle & 0xFF; // Least significant byte  
+            
+            transmit_xbee(payload, sizeof(payload));
+            break;
+        }
+
+        case POLL_RS_MSG:{
+            uint8_t payload[3] = {SEND_RS_MSG, get_sail_position(), get_rudder_position()};
+            transmit_xbee(payload,sizeof(payload));
             break;
         }
             

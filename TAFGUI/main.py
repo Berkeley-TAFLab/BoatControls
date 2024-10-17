@@ -296,7 +296,7 @@ class MainWindow(QMainWindow):
         dest_address_bytes = bytes.fromhex(dest_address.replace(":", ""))
         network_address_bytes = bytes.fromhex(network_address)
 
-        poll_array = [b'\x05', b'\x06', b'\x07']
+        poll_array = [b'\x05', b'\x06', b'\x07',b'\x0C']
         
         for poll_id in poll_array: 
 

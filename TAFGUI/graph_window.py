@@ -36,7 +36,7 @@ class GraphsWindow(QWidget):
 
         # Graph selectors
         self.graph_selectors = {}
-        for attribute in ["Longitude", "Latitude", "Heading"]:
+        for attribute in ["Longitude", "Latitude", "Heading", "Wind Dir"]:
             checkbox = QCheckBox(attribute)
             checkbox.stateChanged.connect(self.update_graph_visibility)
             self.graph_selectors[attribute] = checkbox
@@ -94,7 +94,9 @@ class GraphsWindow(QWidget):
         elif attribute == "Latitude":
             axis_y.setRange(-90, 90)
         elif attribute == "Longitude":
-            axis_y.setRange(-180, 180)
+            axis_y.setRange(-180, 180) 
+        elif attribute == "Wind Dir": 
+            axis_y.setRange(-10,370)
         chart.addAxis(axis_y, Qt.AlignLeft)
 
         series = QLineSeries()
@@ -134,8 +136,8 @@ class GraphsWindow(QWidget):
             series.append(time_diff, value)
 
         if series.count() > 0:
-            min_x = 0
             max_x = elapsed_time
+            min_x = elapsed_time - 10 if elapsed_time > 10 else 0
             
             # Set fixed y-axis range based on attribute
             if attribute == "Heading":
@@ -143,7 +145,10 @@ class GraphsWindow(QWidget):
             elif attribute == "Latitude":
                 min_y, max_y = -90, 90
             elif attribute == "Longitude":
-                min_y, max_y = -180, 180
+                min_y, max_y = -180, 180 
+
+            elif attribute == "Wind Dir":
+                min_y, max_y = 0, 360
             else:
                 min_y = min(point.y() for point in series.points())
                 max_y = max(point.y() for point in series.points())
@@ -180,13 +185,18 @@ class GraphsWindow(QWidget):
             
             if (attribute == "Longitude" and message_type == 0x09) or \
                (attribute == "Latitude" and message_type == 0x0A) or \
-               (attribute == "Heading" and message_type == 0x0B):
+               (attribute == "Heading" and message_type == 0x0B) or \
+                (attribute == "Wind Dir" and message_type == 0x0D):
                 try:
                     if message_type in [0x09, 0x0A]:  # Longitude and Latitude
                         int_value = struct.unpack('!i', payload[:4])[0]
                         float_value = int_value / 100000.0
                     elif message_type == 0x0B:  # Heading
-                        float_value = struct.unpack('!f', payload[:4])[0]
+                        float_value = struct.unpack('!f', payload[:4])[0] 
+
+                    elif message_type == 0x0D: 
+                        int_value = struct.unpack('!H',payload[:2])[0]
+                        float_value = int_value * 1.0
                     
                     data.append((timestamp, float_value))
                 except struct.error:
@@ -226,7 +236,7 @@ class GraphsWindow(QWidget):
         self.csv_writer = csv.writer(self.csv_file)
         
         # Write header
-        header = ["Timestamp", "Device", "Longitude", "Latitude", "Heading"]
+        header = ["Timestamp", "Device", "Longitude", "Latitude", "Heading", "Wind Dir"]
         self.csv_writer.writerow(header)
         
         self.recording = True
@@ -247,8 +257,10 @@ class GraphsWindow(QWidget):
             longitude = self.get_latest_value(device, "Longitude")
             latitude = self.get_latest_value(device, "Latitude")
             heading = self.get_latest_value(device, "Heading")
+            wind_dir = self.get_latest_value(device, "Wind Dir")
+
             
-            self.csv_writer.writerow([timestamp, device, longitude, latitude, heading])
+            self.csv_writer.writerow([timestamp, device, longitude, latitude, heading, wind_dir])
 
     def get_latest_value(self, device, attribute):
         data = self.get_data_from_uart(device, attribute)

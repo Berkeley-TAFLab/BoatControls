@@ -7,5 +7,10 @@ void set_rudder_servo(uint8_t position);
 
 void setup_steer();
 
+uint8_t get_sail_position();
+
+uint8_t get_rudder_position();
+
+
 void manual_steer();
 void auto_steer();

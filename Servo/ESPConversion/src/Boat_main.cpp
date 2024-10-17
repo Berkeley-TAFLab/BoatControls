@@ -121,8 +121,9 @@ void user_input_task(void* parameter){
 //Collect readings from the imu, encoder, magnetometer,gps
 void sensor_readings_task(void* parameter){
     while(1){
-        read_wind_vane();
-        //Serial.println(get_avg_angle());
+        read_wind_vane(); 
+        Serial.print("Average Wind vane angle: ");
+        Serial.println(get_avg_angle());
         read_mpu6050();
         read_lis3mdl();
         read_gtu7(); 
