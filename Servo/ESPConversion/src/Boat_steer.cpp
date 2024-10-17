@@ -100,53 +100,16 @@ void manual_steer() {
     }
 }
 
-
-
-
-void auto_steer_rudder_upwind(float bearing) \
+void steering_boat(float bearing)
 {
-    // Get the current boat heading (from compass or GPS)
-    float current_heading = get_heading_lis3mdl();
-
-    while(bearing> 5 or bearing<-5)
-    {
-    if(bearing > 5) 
-    {
-        // Move at 50 degrees to the wind
-        // TODO: Check this is the correct way to move the rudder
-        manual_steer(50); 
-    } else(bearing < -5) 
-    {
-        //TODO: Check this is the correct way to move the rudder
-        manual_steer(-10);
-    }
-
-    calculate_bearing();
-    }
+    set_rudder_servo(bearing);
+    float heading = get_heading_lis3mdl();
+    
+    
 }
 
-void auto_steer_rudder_downwind(float bearing) {
-    // Get the current boat heading (from compass or GPS)
-    float current_heading = get_heading_lis3mdl();
-
-    while(bearing> 5 or bearing<-5)
-    {
-
-    if(bearing > 5) 
-    {
-        //TODO: Check this is the correct way to move the rudder
-        manual_steer(10); 
-    } else(bearing < -5) 
-    {
-        //TODO: Check this is the correct way to move the rudder
-        manual_steer(-10);
-    }
-
-    CoordinateCalcuations::calculate_bearing();
-    }
-}
-
-void auto_steer() {
+void auto_steer()
+{
     //Need to trigger this function when Auto mode is set
 
     // Get relevant data from sensors

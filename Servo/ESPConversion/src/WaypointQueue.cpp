@@ -6,7 +6,6 @@
 #include <iostream>
 #include <chrono>
 #include <cmath>
-#include <HardwareSerial.h>
 
 #include "WaypointQueue.hpp"
 #include "Coordinate_Calculations.h"
@@ -14,36 +13,22 @@
 #include "TAF_GTU7.h"
 #include "Boat_steer.h"
 
-
 void WaypointQueue::initialize_autonomous_mode()
 {
     lock_guard<mutex> lock(queue_mutex);
     autonomous_mode = true;
-    running = true;
-    execution_thread = thread(&WaypointQueue::execute_waypoints, this);  // Start the execution thread
+    execution_thread = thread(&WaypointQueue::execute_waypoints, this);
 }
 
 Datatypes::Coordinate WaypointQueue::get_next_waypoint()
 {
     unique_lock<mutex> lock(queue_mutex);
-    while (waypoints.empty() && running) {
-        
-        // If at previous destination, point sail into wind
-        Datatypes::Coordinate current_position = get_curr_coordinate();
-        CoordinateCalcuations coordcalc;
-        float distance = coordcalc.calculate_bearing(previous_waypoint, current_position);
-        if (abs(distance) <= 0.005)
-        {
-            set_sail_servo(get_avg_angle());
-            set_rudder_servo(get_avg_angle());
-        }else
-        {
-            Serial.println("WaypointQueue.cpp ln 40: Need to move");
-        }
-
+    while (waypoints.empty() && autonomous_mode)
+    {
         queue_condition.wait(lock);
     }
-    if (!waypoints.empty()) {
+    if (!waypoints.empty())
+    {
         Datatypes::Coordinate next_waypoint = waypoints.front();
         waypoints.pop();
         return next_waypoint;
@@ -75,14 +60,49 @@ bool WaypointQueue::is_empty() const
 
 void WaypointQueue::execute_waypoints()
 {
-    while (running)
+    while (autonomous_mode)
     {
+        // Get the next waypoint from the queue
         Datatypes::Coordinate waypoint = get_next_waypoint();
-        Datatypes::Coordinate curr_position = _get_current_locale();
-        // Execute movement to the waypoint
-        float bearing = CoordinateCalcuations::calculate_bearing(curr_position,waypoint);
-        
 
+        bool reached = false;
+
+        while (!reached && autonomous_mode)
+        {
+            // Update current position from GPS
+            Datatypes::Coordinate curr_position = get_curr_coordinate();
+            
+            // Calculate distance to the waypoint
+            CoordinateCalcuations execute_coordinatecalcs;
+            float distance = execute_coordinatecalcs.calculate_distance(curr_position, waypoint);
+            
+            // If we have reached the waypoint (distance below a threshold), set 'reached' to true
+            if (distance <= 0.005) // 0.005 can be adjusted based on acceptable proximity
+            {
+                reached = true;
+                continue;  
+            }
+
+            // Calculate bearing from current position to waypoint
+            float bearing = execute_coordinatecalcs.calculate_bearing(curr_position, waypoint);
+
+            // Steer boat towards the waypoint
+            steering_boat(bearing);
+
+            // Wait for a bit before updating again to prevent excessive looping
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
+        // If no waypoints and close to previous destination, point sail into wind
+        if (reached && waypoints.empty())
+        {
+            CoordinateCalcuations coordcalc;
+            float distance = coordcalc.calculate_distance(waypoint, get_curr_coordinate());
+            if (abs(distance) <= 0.005)
+            {
+                set_rudder_servo(get_avg_angle());
+            }
+        }
     }
 }
 
@@ -91,7 +111,6 @@ void WaypointQueue::close_autonomous_mode()
     {
         lock_guard<mutex> lock(queue_mutex);
         autonomous_mode = false;
-        running = false;
         queue_condition.notify_all();
     }
     if (execution_thread.joinable())

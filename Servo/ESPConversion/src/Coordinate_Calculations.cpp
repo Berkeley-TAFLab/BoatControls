@@ -6,6 +6,9 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <TAF_LIS3MDL.h>
+
+#include "TAF_GTU7.h"
 #include "Coordinate_Calculations.h"
 #include "Boat_steer.h"
 #include "TAF_AS5600.h" 
@@ -19,11 +22,14 @@ const float RAD_TO_DEG = (180.0f / M_PI);
 
 float CoordinateCalcuations::calculate_optimal_sail_angle(float wind_direction)
 {
-    if (wind_direction < 30)
+    
+    if (wind_direction < 30 && tack_status ==false)
     {
         // Creating logic for getting out of irons
         set_rudder_servo(70);
         set_sail_servo(70);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
         return 70; // Example return to indicate action taken
     }
     else if (wind_direction < 45)
@@ -41,7 +47,8 @@ float CoordinateCalcuations::calculate_optimal_sail_angle(float wind_direction)
 }
 
 // Calculating distance between two coordinate points using the Haversine Formula
-float CoordinateCalcuations::calculate_distance(Datatypes::Coordinate coord1, Datatypes::Coordinate coord2) {
+float CoordinateCalcuations::calculate_distance(Datatypes::Coordinate coord1, Datatypes::Coordinate coord2)
+{
     float delta_lat = (coord2.latitude - coord1.latitude) * DEG_TO_RAD;
     float delta_lon = (coord2.longitude - coord1.longitude) * DEG_TO_RAD;
     float a = sin(delta_lat / 2) * sin(delta_lat / 2) +
@@ -76,7 +83,6 @@ float CoordinateCalcuations::calculate_bearing(Datatypes::Coordinate curr_coord,
 }
 
 Datatypes::Coordinate CoordinateCalcuations::convert_to_position(Datatypes::Coordinate position, float angle, float distance)
-
 {
 
     // Convert latitude and longitude from degrees to radians
@@ -97,6 +103,40 @@ Datatypes::Coordinate CoordinateCalcuations::convert_to_position(Datatypes::Coor
     Datatypes::Coordinate new_position = {new_lat, new_long};
     // Return the new position as a Coordinate
     return new_position;
+}
+
+std::pair<std::string, float> CoordinateCalcuations::calculate_directional_bearing(Datatypes::Coordinate target_waypoint)
+{
+    float current_heading = get_heading_lis3mdl();
+    Datatypes::Coordinate current_position = get_curr_coordinate();
+
+    float target_bearing = calculate_bearing(current_position, target_waypoint);
+    float bearing_difference = target_bearing - current_heading;
+    
+    bearing_difference = fmod(bearing_difference + 360.0f, 360.0f);
+    
+    // Adjust to be within the range [-180, 180] for easier handling of turns
+    if (bearing_difference > 180.0f)
+    {
+        bearing_difference -= 360.0f;
+    }
+
+    // Determine the turn direction and angle
+    std::string turn_direction;
+    float turn_angle;
+
+    if (bearing_difference > 0)
+    {
+        // Target is to the right
+        turn_direction = "right";
+        turn_angle = bearing_difference;
+    } 
+    else{
+        // Target is to the left
+        turn_direction = "left";
+        turn_angle = fabs(bearing_difference);
+    }
+    return std::make_pair(turn_direction, turn_angle);
 }
 
 
@@ -151,3 +191,4 @@ vector<Datatypes::Coordinate> CoordinateCalcuations::plan_tack_path(Datatypes::C
     }
     waypoints.push_back(destination);
     return waypoints;
+}

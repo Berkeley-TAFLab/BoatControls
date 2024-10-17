@@ -18,6 +18,7 @@ public:
     Datatypes::Coordinate convert_to_position(Datatypes::Coordinate position, float angle, float distance);
     float calculate_distance(Datatypes::Coordinate coord1, Datatypes::Coordinate coord2);
     float calculate_bearing(Datatypes::Coordinate start, Datatypes::Coordinate end);
+    std::pair<std::string, float> CoordinateCalcuations::calculate_directional_bearing(Datatypes::Coordinate target_waypoint);
     vector<Datatypes::Coordinate> plan_tack_path(Datatypes::Coordinate start, Datatypes::Coordinate destination);
     
 private:
