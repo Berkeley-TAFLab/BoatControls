@@ -3,7 +3,7 @@ import struct
 from PySide6.QtWidgets import QApplication, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 from PySide6.QtCore import Qt
 
-MESSAGE_ID_LIST = [0x08, 0x09, 0x0A, 0x0B]
+MESSAGE_ID_LIST = [0x08, 0x09, 0x0A, 0x0B, 0x0D]
 
 class ScrollableTableWidget(QWidget):
     def __init__(self, parent=None):
@@ -11,9 +11,9 @@ class ScrollableTableWidget(QWidget):
 
         self.table_widget = QTableWidget()
         self.table_widget.setRowCount(0)
-        self.table_widget.setColumnCount(6)
+        self.table_widget.setColumnCount(7)
 
-        self.table_widget.setHorizontalHeaderLabels(["Source Address", "Network Address", "Status", "Longitude", "Latitude", "Heading"])
+        self.table_widget.setHorizontalHeaderLabels(["Source Address", "Network Address", "Status", "Longitude", "Latitude", "Heading", "Wind Dir"])
 
         self.table_widget.setVerticalScrollMode(QTableWidget.ScrollPerPixel)
         self.table_widget.setHorizontalScrollMode(QTableWidget.ScrollPerPixel)
@@ -54,14 +54,20 @@ class ScrollableTableWidget(QWidget):
             if message_type == 0x08:  # Receive Status
                 self.table_widget.setItem(row, 2, QTableWidgetItem(f"{parsed_data[0]}"))
             elif message_type == 0x09:  # Receive Longitude
-                float_value = struct.unpack('!f', parsed_data[:4])[0]
+                int_value = struct.unpack('!i', parsed_data[:4])[0]
+                float_value = int_value / 100000.0
                 self.table_widget.setItem(row, 3, QTableWidgetItem(f"{float_value:.5f}"))
             elif message_type == 0x0A:  # Receive Latitude
-                float_value = struct.unpack('!f', parsed_data[:4])[0]
+                int_value = struct.unpack('!i', parsed_data[:4])[0]
+                float_value = int_value / 100000.0
                 self.table_widget.setItem(row, 4, QTableWidgetItem(f"{float_value:.5f}"))
             elif message_type == 0x0B:  # Receive Heading
                 float_value = struct.unpack('!f', parsed_data[:4])[0]
-                self.table_widget.setItem(row, 5, QTableWidgetItem(f"{float_value:.5f}"))
+                self.table_widget.setItem(row, 5, QTableWidgetItem(f"{float_value:.5f}"))  
+            elif message_type == 0x0D:  # Receive WindDir
+                int_value = struct.unpack('!H', parsed_data[:2])[0]
+                self.table_widget.setItem(row, 6, QTableWidgetItem(str(int_value))) 
+            
 
         except struct.error:
             print(f"Error parsing data for message type {message_type}")

@@ -1,11 +1,12 @@
 import sys
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                                QHBoxLayout, QSplitter, QToolBar, QStackedWidget, QInputDialog)
-from PySide6.QtCore import Qt, QThread, Signal, Slot, QUrl, QTimer
+from PySide6.QtCore import Qt, QThread, Signal, Slot, QUrl, QTimer, QDateTime
 from PySide6.QtGui import QAction
 from PySide6.QtQuickWidgets import QQuickWidget
 from scrollable_table import ScrollableTableWidget
 from controlbar import ControlBar
+from graph_window import GraphsWindow  
 import serial
 import serial.tools.list_ports
 import time
@@ -23,7 +24,8 @@ class UARTHandler(QThread):
         self.baud_rate = baud_rate
         self.running = True
         self.serial = None
-        self.buffer = bytearray()
+        self.buffer = bytearray() 
+        self.messages = {}
 
     def run(self):
         print("Attempting to receive data")
@@ -100,11 +102,20 @@ class UARTHandler(QThread):
             # Remove processed frame from buffer
             self.buffer = self.buffer[length+4:]
 
-            return {
+            message = {
+                'timestamp': QDateTime.currentDateTime(),
                 'source_address': ':'.join(f'{b:02X}' for b in source_address),
                 'source_network_address': f'{source_network_address[0]:02X}{source_network_address[1]:02X}',
                 'data': received_data.hex()
             }
+            
+            if message['source_address'] not in self.messages:
+                self.messages[message['source_address']] = []
+            self.messages[message['source_address']].append(message)
+            
+            return message
+        
+        
         else:
             self.buffer = self.buffer[length+4:]
             return None
@@ -113,6 +124,12 @@ class UARTHandler(QThread):
         self.running = False
         if self.serial and self.serial.is_open:
             self.serial.close()
+
+    def get_messages_for_device(self, device):
+        return self.messages.get(device, [])
+
+    def get_device_list(self):
+        return list(self.messages.keys())
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -180,12 +197,20 @@ class MainWindow(QMainWindow):
     @Slot(dict)
     def process_serial_message(self, message):
         print(f"\nReceived XBee message from {message['source_address']} "
-              f"(Network: {message['source_network_address']}):")
+            f"(Network: {message['source_network_address']}):")
         print(f"Data (hex): {message['data']}")
         
-        # Update table if window1 is active
-        if self.stacked_widget.currentIndex() == 0:
-            self.table_widget.update_table(message)  # Pass the entire message dictionary
+        # Update table
+        self.table_widget.update_table(message)
+        
+        # Update graphs
+        if hasattr(self, 'graphs_window'):
+            self.graphs_window.update_device_list()
+            self.graphs_window.update_graphs()
+        
+        # Record data if recording is active
+        if hasattr(self, 'graphs_window') and self.graphs_window.recording:
+            self.graphs_window.record_data()
 
     def send_uart_message(self, message):
         print("Transmitting uart message")
@@ -231,11 +256,8 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(window)
         
     def create_window2(self):
-        window = QWidget()
-        layout = QVBoxLayout(window)
-        layout.addWidget(QWidget())  # Placeholder, replace with your content
-        layout.addWidget(QWidget())  # Placeholder, replace with your content
-        self.stacked_widget.addWidget(window)
+        self.graphs_window = GraphsWindow(self)  # Pass self (MainWindow) instead of self.table_widget
+        self.stacked_widget.addWidget(self.graphs_window)
 
     def create_toolbar_actions(self):
         action1 = QAction("Trace", self)
@@ -274,7 +296,7 @@ class MainWindow(QMainWindow):
         dest_address_bytes = bytes.fromhex(dest_address.replace(":", ""))
         network_address_bytes = bytes.fromhex(network_address)
 
-        poll_array = [b'\x05', b'\x06', b'\x07']
+        poll_array = [b'\x05', b'\x06', b'\x07',b'\x0C']
         
         for poll_id in poll_array: 
 
@@ -295,6 +317,9 @@ class MainWindow(QMainWindow):
             print(f"Sending poll message to {dest_address} ({network_address})")
             print(f"Frame (hex): {frame.hex()}")
             self.send_uart_message(frame)
+    def update_graphs_device_list(self):
+        if hasattr(self, 'graphs_window'):
+            self.graphs_window.update_device_list() 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
