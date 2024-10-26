@@ -7,6 +7,7 @@ enum SM_States {
     IDLE, 
     MANUAL,
     AUTO,
+    SIMULATE,
     BAD_STATE
 };
 

@@ -63,7 +63,7 @@ void steering_task(void* parameter){
                 while(curr_state == AUTO)
                 {
                     Serial.println("Currently in Auto mode");
-                    auto_steer();
+                    WaypointQueue::initialize_autonomous_mode();
                 }
                 // Resetting Local Variables
                 WaypointQueue::close_autonomous_mode();
