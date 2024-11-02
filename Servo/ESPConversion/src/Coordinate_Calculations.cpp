@@ -6,24 +6,26 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
-#include <TAF_LIS3MDL.h>
 
+
+#include "TAF_LIS3MDL.h"
 #include "TAF_GTU7.h"
 #include "Coordinate_Calculations.h"
 #include "Boat_steer.h"
 #include "TAF_AS5600.h" 
 #include "WaypointQueue.hpp"
+#include "TAF_LIS3MDL.h"
 
 using namespace std;
 
 const unsigned int EARTH_RADIUS = 6371000.0; // Earth radius in meters
 const float DEG_TO_RAD = (M_PI / 180.0f);
 const float RAD_TO_DEG = (180.0f / M_PI);
+const float IRONS_DEGREE = 30;
 
-float CoordinateCalcuations::calculate_optimal_sail_angle(float wind_direction)
+float CoordinateCalculations::calculate_optimal_sail_angle(float wind_direction)
 {
-    
-    if (wind_direction < 30 && tack_status ==false)
+    if (IRONS_DEGREE < 30 && tack_status ==false)
     {
         // Creating logic for getting out of irons
         set_rudder_servo(70);
@@ -47,7 +49,7 @@ float CoordinateCalcuations::calculate_optimal_sail_angle(float wind_direction)
 }
 
 // Calculating distance between two coordinate points using the Haversine Formula
-float CoordinateCalcuations::calculate_distance(Datatypes::Coordinate coord1, Datatypes::Coordinate coord2)
+float CoordinateCalculations::calculate_distance(Datatypes::Coordinate coord1, Datatypes::Coordinate coord2)
 {
     float delta_lat = (coord2.latitude - coord1.latitude) * DEG_TO_RAD;
     float delta_lon = (coord2.longitude - coord1.longitude) * DEG_TO_RAD;
@@ -60,7 +62,7 @@ float CoordinateCalcuations::calculate_distance(Datatypes::Coordinate coord1, Da
 }
 
 
-float CoordinateCalcuations::calculate_bearing(Datatypes::Coordinate curr_coord, Datatypes::Coordinate tar_coord)
+float CoordinateCalculations::calculate_bearing(Datatypes::Coordinate curr_coord, Datatypes::Coordinate tar_coord)
 {
     // Converting to radians
     float curr_lat_rad = curr_coord.latitude * DEG_TO_RAD;
@@ -82,7 +84,7 @@ float CoordinateCalcuations::calculate_bearing(Datatypes::Coordinate curr_coord,
     return bearing;
 }
 
-Datatypes::Coordinate CoordinateCalcuations::convert_to_position(Datatypes::Coordinate position, float angle, float distance)
+Datatypes::Coordinate CoordinateCalculations::convert_to_position(Datatypes::Coordinate position, float angle, float distance)
 {
 
     // Convert latitude and longitude from degrees to radians
@@ -105,7 +107,7 @@ Datatypes::Coordinate CoordinateCalcuations::convert_to_position(Datatypes::Coor
     return new_position;
 }
 
-std::pair<std::string, float> CoordinateCalcuations::calculate_directional_bearing(Datatypes::Coordinate target_waypoint)
+std::pair<std::string, float> CoordinateCalculations::calculate_directional_bearing(Datatypes::Coordinate target_waypoint)
 {
     float current_heading = get_heading_lis3mdl();
     Datatypes::Coordinate current_position = get_curr_coordinate();
@@ -139,56 +141,70 @@ std::pair<std::string, float> CoordinateCalcuations::calculate_directional_beari
     return std::make_pair(turn_direction, turn_angle);
 }
 
-
-vector<Datatypes::Coordinate> CoordinateCalcuations::plan_tack_path(Datatypes::Coordinate start, Datatypes::Coordinate destination) 
+//TODO: Check if this function is actually needed
+float CoordinateCalculations::calculate_angle_to_wind() 
 {
-    WaypointQueue waypointQueue;
-    vector<Datatypes::Coordinate> waypoints;
-    Datatypes::Coordinate current_position = start;
     float wind_direction = get_avg_angle();
+    float current_heading = get_heading_lis3mdl();
+    // Calculate the angle difference between the current heading and wind direction
+    float angle_difference = abs(current_heading - wind_direction);
 
-    // Calculate initial bearing to destination
-    float destination_bearing = calculate_bearing(current_position, destination);
+    // Normalize to range [0, 180] degrees
+    if (angle_difference > 180) 
+    {
+        angle_difference = 360 - angle_difference;
+    }
 
-    // Calculate the angle difference between the desired heading and wind direction
+    return angle_difference;
+}
+
+
+void CoordinateCalculations::plan_path(const Datatypes::Coordinate& curr_position, const Datatypes::Coordinate& next_waypoint)
+{
+    float destination_bearing = CoordinateCalculations::getInstance().calculate_bearing(curr_position, next_waypoint);
+    float wind_direction = get_avg_angle();  // Get current wind direction
+
+    // Calculate angle between wind direction and destination bearing
     float angle_to_wind = abs(wind_direction - destination_bearing);
     if (angle_to_wind > 180) 
     {
-        angle_to_wind = 360 - angle_to_wind;  // Normalize to 0-180 degrees
+        angle_to_wind = 360 - angle_to_wind;  // Normalize angle to 0-180 degrees
     }
 
-    // Defining no go zone relative to wind directiion
-    // TODO: Understand if wind sensor is taken relative to north or relative to boat
-    // TODO: Needs to be unit tested
-
-    // If the destination is upwind, plan a tacking path
-    if (angle_to_wind <= max_upwind_angle)
+    // Check if tacking is needed by comparing with the max allowable upwind angle
+    if (angle_to_wind > max_upwind_angle) 
     {
-        float straight_distance = calculate_distance(current_position, destination);
-        float tack_diagonal_distance = straight_distance / cos(max_upwind_angle * 3.14 / 180.0);
 
-        // Determine if the boat is moving left or right relative to the wind direction
-        float bearing_difference = wind_direction - destination_bearing;
-        if (bearing_difference < 0) 
-        {
-            bearing_difference += 360;
-        }
-
-        // If moving right of the wind direction (0-180 degrees), tack right
-        if (bearing_difference < 180) 
-        {
-            waypointQueue.add_waypoint(convert_to_position(current_position,bearing_difference, tack_diagonal_distance));
-        }
-        // If moving left of the wind direction (180-360 degrees), tack left
-        else {
-            waypointQueue.add_waypoint(convert_to_position(current_position,bearing_difference+180, tack_diagonal_distance));
-        }
     }
 
-    // Add final waypoint to reach the destination
-    while (!waypointQueue.is_empty()) {
-    waypoints.push_back(waypointQueue.get_next_waypoint());
+    // Tacking is required, so calculate intermediate waypoints
+    float tack_distance = CoordinateCalculations::getInstance().calculate_distance(curr_position, next_waypoint) / cos(max_upwind_angle * M_PI / 180.0);
+    float first_tack_angle, second_tack_angle;
+
+    // Determine tack direction based on wind and destination bearings
+    float bearing_difference = wind_direction - destination_bearing;
+    if (bearing_difference < 0) 
+    {
+        bearing_difference += 360;  // Normalize bearing difference to 0-360
     }
-    waypoints.push_back(destination);
-    return waypoints;
+
+    // Set tack angles based on which direction the boat should tack first
+    if (bearing_difference < 180) 
+    {
+        first_tack_angle = destination_bearing + max_upwind_angle;
+        second_tack_angle = destination_bearing - max_upwind_angle;
+    } 
+    else 
+    {
+        first_tack_angle = destination_bearing - max_upwind_angle;
+        second_tack_angle = destination_bearing + max_upwind_angle;
+    }
+
+    // Calculate and add tack waypoints
+    Datatypes::Coordinate first_tack_waypoint = CoordinateCalculations::getInstance().convert_to_position(curr_position, first_tack_angle, tack_distance / 2);
+    Datatypes::Coordinate second_tack_waypoint = CoordinateCalculations::getInstance().convert_to_position(first_tack_waypoint, second_tack_angle, tack_distance / 2);
+    WaypointQueue::getInstance().add_front_waypoint(first_tack_waypoint);
+    WaypointQueue::getInstance().add_front_waypoint(second_tack_waypoint);
+    WaypointQueue::getInstance().add_front_waypoint(next_waypoint);  // Add original destination as the last waypoint
+
 }

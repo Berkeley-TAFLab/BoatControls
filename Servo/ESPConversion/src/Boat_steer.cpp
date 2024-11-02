@@ -6,6 +6,7 @@
 #include <TAF_LIS3MDL.h>
 #include <TAF_MPU6050.h>
 #include <Boat_steer.h>
+
 #include "constants.h"
 #include <Coordinate_Calculations.h>
 #include "WaypointQueue.hpp"
@@ -127,7 +128,7 @@ void steering_boat(float bearing)
     float heading = get_heading_lis3mdl();
     
     
-
+}
 uint8_t get_sail_position(){
     uint8_t return_val = -1;
     if (xSemaphoreTake(curr_sail_sem, 5000) == true) {
@@ -150,37 +151,5 @@ uint8_t get_rudder_position(){
 
 void auto_steer()
 {
-    //Need to trigger this function when Auto mode is set
-
-    // Get relevant data from sensors
-    float heading = get_heading_lis3mdl();
-    DataTypes::Coordinate current_position = get_gtu7_lat(),get_gtu7_long();
-    winddirection = get_avgF_angle();
-
-    //Init Waypoint Queue
-    WaypointQueue::initialize_autonomous_mode();
-    
-
-    // Calculate the desired heading to the target location
-    float desired_heading = CoordinateCalcuations::calculate_bearing(current_position, target_position);
-
-
-    // Determine if the boat needs to head upwind or downwind
-    float angle_to_wind = abs(wind_direction - desired_heading);
-    
-    if(angle_to_wind > 180) 
-    {
-        angle_to_wind = 360 - angle_to_wind;
-    }
-    // Check to see if tacking is required (when boat needs to head more than 45 degrees upwind)
-    if(angle_to_wind <= 45) 
-    {
-        
-        //TODO: Implement Auto Steering Upwind (will require tacking)
-        auto_steer_upwind();
-        
-    }else 
-    {
-        auto_steer_downwind();
-    }
+    //Keeping function here for completeness but might need to be removed later
 }

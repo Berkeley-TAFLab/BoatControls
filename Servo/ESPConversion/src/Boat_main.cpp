@@ -48,6 +48,7 @@ void water_detection_task(void* parameter){
 
 //TODO: Test this to make sure not infinite loop
 void steering_task(void* parameter){
+
     while(1){
         //TODO: Finish the steering task. This should already mainly exist somewhere  
         SM_States curr_state = get_curr_state();
@@ -60,13 +61,23 @@ void steering_task(void* parameter){
                 // Serial.println("Currently in Manual controls...");
                 break;
             case AUTO:
-                while(curr_state == AUTO)
+
+                while(get_curr_state() == AUTO)
                 {
                     Serial.println("Currently in Auto mode");
-                    WaypointQueue::initialize_autonomous_mode();
+                    WaypointQueue::getInstance().initialize_autonomous_mode();
                 }
                 // Resetting Local Variables
-                WaypointQueue::close_autonomous_mode();
+                WaypointQueue::getInstance().close_autonomous_mode();
+                break;
+            case SIMULATE:
+                while(get_curr_state() == AUTO)
+                {
+                    Serial.println("Currently in Auto mode");
+                    WaypointQueue::getInstance().initialize_autonomous_mode();
+                }
+                // Resetting Local Variables
+                WaypointQueue::getInstance().close_autonomous_mode();
                 break;
             default:
                 // Serial.println("Unknown Command...");
