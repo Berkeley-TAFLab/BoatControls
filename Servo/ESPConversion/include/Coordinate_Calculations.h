@@ -36,8 +36,8 @@ public:
 
     /**
     @brief A function used to calculate the distance between two coordinates
-    @param coord1 The first coordiante
-    @param coord2 The second coordiant
+    @param coord1 The first co-ordinate
+    @param coord2 The second co-ordinate
     @return A float value of the distance between the two coordinates in meters
     **/
     float calculate_distance(Datatypes::Coordinate coord1, Datatypes::Coordinate coord2);
@@ -64,6 +64,13 @@ public:
      **/
     std::pair<std::string, float> calculate_directional_bearing(Datatypes::Coordinate target_waypoint);
     
+
+    /**
+    @brief A temporary function used to check the difference between the current heading and angle to wind
+    need to determine if this function returns the same as the wind sensor (which it should)
+    @return float A float value of the angle between the wind and current heading
+    @note The function assumes that the current heading and coordinates are obtained from other methods in the class.
+     **/
     float CoordinateCalculations::calculate_angle_to_wind();
 
     void plan_path(const Datatypes::Coordinate& curr_position, const Datatypes::Coordinate& next_waypoint);
