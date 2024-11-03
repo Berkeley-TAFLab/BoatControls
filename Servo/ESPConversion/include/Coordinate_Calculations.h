@@ -71,7 +71,7 @@ public:
     @return float A float value of the angle between the wind and current heading
     @note The function assumes that the current heading and coordinates are obtained from other methods in the class.
      **/
-    float CoordinateCalculations::calculate_angle_to_wind();
+    float calculate_angle_to_wind();
 
     void plan_path(const Datatypes::Coordinate& curr_position, const Datatypes::Coordinate& next_waypoint);
 

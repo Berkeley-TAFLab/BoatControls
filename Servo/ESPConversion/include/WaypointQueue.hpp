@@ -77,7 +77,7 @@ public:
     @brief A helper function used to check if the waypoint queue is empty
     @return Length of queue as an int
     */
-    int WaypointQueue::get_len_queue();
+    std::size_t get_len_queue();
 
 
 private:

@@ -39,7 +39,7 @@ Datatypes::Coordinate WaypointQueue::get_next_waypoint()
     return Datatypes::Coordinate(); // Return default coordinate if queue is empty
 }
 
-int WaypointQueue::get_len_queue()
+std::size_t WaypointQueue::get_len_queue()
 {
     return waypoints.size();
 }
