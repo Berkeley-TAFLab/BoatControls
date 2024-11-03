@@ -30,7 +30,7 @@ uint16_t source_network_address;
 
 
 
-//Detect if there's waterin the bottom of the boat, alert if so
+//Detect if there's water in the bottom of the boat, alert if so
 void water_detection_task(void* parameter){
     while(1){
         //TODO: implement alert if water level is too high
