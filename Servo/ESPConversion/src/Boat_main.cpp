@@ -14,6 +14,7 @@
 #include "TAF_Xbee.h"
 #include "Boat_steer.h"
 #include "WaypointQueue.hpp"
+#include "Sail_Control.hpp"
 
 //Private user defines. These will likely be used by sensors in their respective source files
 HardwareSerial Gps_Serial(1); //Variable used by the GPS
@@ -197,6 +198,14 @@ void main_setup(){
     sailServo.attach(SAIL_SERVO_PIN);
     tailServo.attach(TAIL_SERVO_PIN);
     
+
+    try {
+    sailData = loadSailData("/path/to/sail_data.csv"); // Make sure to specify the correct path
+    } catch(const std::exception& e)
+    {
+        Serial.println("Failed to load sail data");
+    }
+
     //Initialize the state machine before doing anything
     sm_init();
 

@@ -221,11 +221,11 @@ void WaypointQueue::execute_waypoints()
 
 void WaypointQueue::close_autonomous_mode()
 {
-    {
-        lock_guard<mutex> lock(queue_mutex);
-        autonomous_mode = false;
-        queue_condition.notify_all();
-    }
+    
+    lock_guard<mutex> lock(queue_mutex);
+    autonomous_mode = false;
+    queue_condition.notify_all();
+    
     if (execution_thread.joinable())
     {
         execution_thread.join();
