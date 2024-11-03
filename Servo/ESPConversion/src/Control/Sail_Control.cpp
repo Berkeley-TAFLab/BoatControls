@@ -1,3 +1,8 @@
+// Filename: SailControl.cpp
+// Author: Kieran Pereira
+// Date: 10/11/2024
+// Description: Implementation file for autonomously controlling the sail
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
