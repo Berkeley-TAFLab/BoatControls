@@ -18,6 +18,8 @@ int interpolateSailPosition(int windAngle, const SailData& lower, const SailData
 // Returns the optimal sail position for a given wind angle, using interpolation if necessary
 int getOptimalSailPosition(int windAngle, const std::vector<SailData>& sailData);
 
+void sail_control_task(void* parameter);
+
 std::vector<SailData> sailData;
 
 #endif // SAIL_CONTROL

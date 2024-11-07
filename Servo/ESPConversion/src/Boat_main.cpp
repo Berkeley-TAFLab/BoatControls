@@ -1,5 +1,6 @@
 //Predefined Libraries and headers
-#include <Arduino.h>
+#include <wiringPi.h>
+#include <stdio.h>
 #include <Wire.h>
 #include <HardwareSerial.h>
 #include <ESP32Servo.h>
@@ -198,7 +199,6 @@ void main_setup(){
     sailServo.attach(SAIL_SERVO_PIN);
     tailServo.attach(TAIL_SERVO_PIN);
     
-
     try {
     sailData = loadSailData("/path/to/sail_data.csv"); // Make sure to specify the correct path
     } catch(const std::exception& e)
@@ -210,4 +210,5 @@ void main_setup(){
     sm_init();
 
     delay(1000); //Delay necessary in order to finish setting up peripherals
+    xTaskCreate(sail_control_task,"Sail Control Task", 4096, NULL, 1, NULL);
 }
