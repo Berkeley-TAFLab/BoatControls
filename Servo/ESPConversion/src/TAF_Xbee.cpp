@@ -96,7 +96,7 @@ bool receive_xbee(uint8_t* buffer, size_t* length, uint64_t* source_address, uin
     uint16_t frame_length = Xbee_Serial.read() << 8 | Xbee_Serial.read();
 
     if (frame_length > 255) {
-        Serial.println("Frame length exceeds maximum allowed size");
+        // Serial.println("Frame length exceeds maximum allowed size");
         return false;
     }
 
@@ -230,14 +230,14 @@ void parse_xbee_msg(uint8_t* data_buffer,size_t length){
             break;
         }
 
-        case POLL_RS_MSG:{
-            uint8_t payload[3] = {SEND_RS_MSG, get_sail_position(), get_rudder_position()};
-            transmit_xbee(payload,sizeof(payload));
-            break;
-        }
+        // case POLL_RS_MSG:{
+            // uint8_t payload[3] = {SEND_RS_MSG, get_sail_position(), get_rudder_position()};
+            // transmit_xbee(payload,sizeof(payload));
+            // break;
+        // }
             
     }
-
+  
     // for (size_t i = 0; i < length; i++)
     // {
     //   Serial.print(data_buffer[i], HEX);

@@ -122,8 +122,8 @@ void user_input_task(void* parameter){
 void sensor_readings_task(void* parameter){
     while(1){
         read_wind_vane(); 
-        Serial.print("Average Wind vane angle: ");
-        Serial.println(get_avg_angle());
+        // Serial.print("Average Wind vane angle: ");
+        // Serial.println(get_avg_angle());
         read_mpu6050();
         read_lis3mdl();
         read_gtu7(); 
