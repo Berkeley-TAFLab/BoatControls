@@ -46,30 +46,29 @@ class ScrollableTableWidget(QWidget):
             row = self.table_widget.rowCount()
             self.table_widget.insertRow(row)
             self.address_mapping[source_address] = row
-
-        self.table_widget.setItem(row, 0, QTableWidgetItem(source_address))
-        self.table_widget.setItem(row, 1, QTableWidgetItem(network_address))
+            self.table_widget.setItem(row, 0, QTableWidgetItem(source_address))
+            self.table_widget.setItem(row, 1, QTableWidgetItem(network_address))
 
         try:
-            if message_type == 0x08:  # Receive Status
-                self.table_widget.setItem(row, 2, QTableWidgetItem(f"{parsed_data[0]}"))
-            elif message_type == 0x09:  # Receive Longitude
-                int_value = struct.unpack('!i', parsed_data[:4])[0]
-                float_value = int_value / 100000.0
-                self.table_widget.setItem(row, 3, QTableWidgetItem(f"{float_value:.5f}"))
-            elif message_type == 0x0A:  # Receive Latitude
-                int_value = struct.unpack('!i', parsed_data[:4])[0]
-                float_value = int_value / 100000.0
-                self.table_widget.setItem(row, 4, QTableWidgetItem(f"{float_value:.5f}"))
-            elif message_type == 0x0B:  # Receive Heading
-                float_value = struct.unpack('!f', parsed_data[:4])[0]
-                self.table_widget.setItem(row, 5, QTableWidgetItem(f"{float_value:.5f}"))  
-            elif message_type == 0x0D:  # Receive WindDir
-                int_value = struct.unpack('!H', parsed_data[:2])[0]
-                self.table_widget.setItem(row, 6, QTableWidgetItem(str(int_value))) 
-            
-
-        except struct.error:
-            print(f"Error parsing data for message type {message_type}")
+            if message_type == 0x09:  # Longitude
+                if len(parsed_data) >= 4:
+                    int_value = struct.unpack('!i', parsed_data[:4])[0]
+                    float_value = int_value / 100000.0
+                    self.table_widget.setItem(row, 3, QTableWidgetItem(f"{float_value:.5f}"))
+            elif message_type == 0x0A:  # Latitude
+                if len(parsed_data) >= 4:
+                    int_value = struct.unpack('!i', parsed_data[:4])[0]
+                    float_value = int_value / 100000.0
+                    self.table_widget.setItem(row, 4, QTableWidgetItem(f"{float_value:.5f}"))
+            elif message_type == 0x0B:  # Heading
+                if len(parsed_data) >= 4:
+                    float_value = struct.unpack('!f', parsed_data[:4])[0]
+                    self.table_widget.setItem(row, 5, QTableWidgetItem(f"{float_value:.5f}"))
+            elif message_type == 0x0D:  # Wind Direction
+                if len(parsed_data) >= 2:
+                    int_value = struct.unpack('!H', parsed_data[:2])[0]
+                    self.table_widget.setItem(row, 6, QTableWidgetItem(str(int_value)))
+        except struct.error as e:
+            print(f"Error parsing data for message type {message_type}: {e}")
 
         self.table_widget.resizeColumnsToContents()

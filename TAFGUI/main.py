@@ -64,6 +64,8 @@ class UARTHandler(QThread):
         # Check for start delimiter
         start_index = self.buffer.find(START_DELIMITER.to_bytes(1, 'big'))
         if start_index == -1:
+            # Discard unrecognized data
+            self.buffer.clear()
             return None
 
         # Remove data before start delimiter
@@ -75,7 +77,12 @@ class UARTHandler(QThread):
         # Read frame length
         length = int.from_bytes(self.buffer[1:3], 'big')
 
-        # Check if we have the full frame
+        # Check for oversized or incomplete frames
+        if length > 1024:
+            print("Frame length exceeds maximum allowed size. Discarding buffer.")
+            self.buffer.clear()
+            return None
+
         if len(self.buffer) < length + 4:
             return None
 
@@ -108,17 +115,20 @@ class UARTHandler(QThread):
                 'source_network_address': f'{source_network_address[0]:02X}{source_network_address[1]:02X}',
                 'data': received_data.hex()
             }
-            
+
+            # Limit message storage per device
             if message['source_address'] not in self.messages:
                 self.messages[message['source_address']] = []
+            if len(self.messages[message['source_address']]) >= 1000:
+                self.messages[message['source_address']].pop(0)
+
             self.messages[message['source_address']].append(message)
-            
             return message
-        
-        
+
         else:
             self.buffer = self.buffer[length+4:]
             return None
+
 
     def stop(self):
         self.running = False
