@@ -64,6 +64,7 @@ class UARTHandler(QThread):
         # Check for start delimiter
         start_index = self.buffer.find(START_DELIMITER.to_bytes(1, 'big'))
         if start_index == -1:
+            self.buffer.clear()  # Clear invalid data
             return None
 
         # Remove data before start delimiter
@@ -87,7 +88,7 @@ class UARTHandler(QThread):
         calculated_checksum = (0xFF - (sum(frame_data) & 0xFF)) & 0xFF
         if calculated_checksum != received_checksum:
             print("Checksum mismatch. Discarding frame.")
-            self.buffer = self.buffer[length+4:]
+            self.buffer = self.buffer[length+4:]  # Trim processed data
             return None
 
         # Parse frame type
@@ -102,35 +103,30 @@ class UARTHandler(QThread):
             # Remove processed frame from buffer
             self.buffer = self.buffer[length+4:]
 
+            # Create message dictionary
             message = {
                 'timestamp': QDateTime.currentDateTime(),
                 'source_address': ':'.join(f'{b:02X}' for b in source_address),
                 'source_network_address': f'{source_network_address[0]:02X}{source_network_address[1]:02X}',
                 'data': received_data.hex()
             }
-            
+
+            # Store message in device-specific buffer
             if message['source_address'] not in self.messages:
                 self.messages[message['source_address']] = []
             self.messages[message['source_address']].append(message)
-            
+
             return message
-        
-        
+
         else:
+            # Handle unsupported frame types
             self.buffer = self.buffer[length+4:]
             return None
 
-    def stop(self):
-        self.running = False
-        if self.serial and self.serial.is_open:
-            self.serial.close()
-
-    def get_messages_for_device(self, device):
-        return self.messages.get(device, [])
-
     def get_device_list(self):
-        return list(self.messages.keys())
-
+        """Returns a list of devices currently in the messages dictionary."""
+        return list(self.messages.keys()) 
+    
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()

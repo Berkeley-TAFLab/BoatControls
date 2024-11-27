@@ -52,24 +52,37 @@ class ScrollableTableWidget(QWidget):
 
         try:
             if message_type == 0x08:  # Receive Status
-                self.table_widget.setItem(row, 2, QTableWidgetItem(f"{parsed_data[0]}"))
+                if len(parsed_data) >= 1:
+                    self.table_widget.setItem(row, 2, QTableWidgetItem(f"{parsed_data[0]}"))
+                else:
+                    print("Invalid status payload length")
             elif message_type == 0x09:  # Receive Longitude
-                int_value = struct.unpack('!i', parsed_data[:4])[0]
-                float_value = int_value / 100000.0
-                self.table_widget.setItem(row, 3, QTableWidgetItem(f"{float_value:.5f}"))
+                if len(parsed_data) >= 4:
+                    int_value = struct.unpack('!i', parsed_data[:4])[0]
+                    float_value = round(int_value / 100000.0, 6)
+                    self.table_widget.setItem(row, 3, QTableWidgetItem(f"{float_value:.6f}"))
+                else:
+                    print("Invalid longitude payload length")
             elif message_type == 0x0A:  # Receive Latitude
-                int_value = struct.unpack('!i', parsed_data[:4])[0]
-                float_value = int_value / 100000.0
-                self.table_widget.setItem(row, 4, QTableWidgetItem(f"{float_value:.5f}"))
+                if len(parsed_data) >= 4:
+                    int_value = struct.unpack('!i', parsed_data[:4])[0]
+                    float_value = round(int_value / 100000.0, 6)
+                    self.table_widget.setItem(row, 4, QTableWidgetItem(f"{float_value:.6f}"))
+                else:
+                    print("Invalid latitude payload length")
             elif message_type == 0x0B:  # Receive Heading
-                float_value = struct.unpack('!f', parsed_data[:4])[0]
-                self.table_widget.setItem(row, 5, QTableWidgetItem(f"{float_value:.5f}"))  
+                if len(parsed_data) >= 4:
+                    float_value = struct.unpack('!f', parsed_data[:4])[0]
+                    self.table_widget.setItem(row, 5, QTableWidgetItem(f"{float_value:.6f}"))
+                else:
+                    print("Invalid heading payload length")
             elif message_type == 0x0D:  # Receive WindDir
-                int_value = struct.unpack('!H', parsed_data[:2])[0]
-                self.table_widget.setItem(row, 6, QTableWidgetItem(str(int_value))) 
-            
-
-        except struct.error:
-            print(f"Error parsing data for message type {message_type}")
+                if len(parsed_data) >= 2:
+                    int_value = struct.unpack('!H', parsed_data[:2])[0]
+                    self.table_widget.setItem(row, 6, QTableWidgetItem(str(int_value)))
+                else:
+                    print("Invalid wind direction payload length")
+        except struct.error as e:
+            print(f"Error parsing data for message type {message_type}: {e}")
 
         self.table_widget.resizeColumnsToContents()
