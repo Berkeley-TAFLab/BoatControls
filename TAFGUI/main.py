@@ -64,7 +64,8 @@ class UARTHandler(QThread):
         # Check for start delimiter
         start_index = self.buffer.find(START_DELIMITER.to_bytes(1, 'big'))
         if start_index == -1:
-            self.buffer.clear()  # Clear invalid data
+            # Discard unrecognized data
+            self.buffer.clear()
             return None
 
         # Remove data before start delimiter
@@ -76,7 +77,12 @@ class UARTHandler(QThread):
         # Read frame length
         length = int.from_bytes(self.buffer[1:3], 'big')
 
-        # Check if we have the full frame
+        # Check for oversized or incomplete frames
+        if length > 1024:
+            print("Frame length exceeds maximum allowed size. Discarding buffer.")
+            self.buffer.clear()
+            return None
+
         if len(self.buffer) < length + 4:
             return None
 
@@ -111,17 +117,28 @@ class UARTHandler(QThread):
                 'data': received_data.hex()
             }
 
-            # Store message in device-specific buffer
+            # Limit message storage per device
             if message['source_address'] not in self.messages:
                 self.messages[message['source_address']] = []
-            self.messages[message['source_address']].append(message)
+            if len(self.messages[message['source_address']]) >= 1000:
+                self.messages[message['source_address']].pop(0)
 
+            self.messages[message['source_address']].append(message)
             return message
 
         else:
             # Handle unsupported frame types
             self.buffer = self.buffer[length+4:]
             return None
+
+
+    def stop(self):
+        self.running = False
+        if self.serial and self.serial.is_open:
+            self.serial.close()
+
+    def get_messages_for_device(self, device):
+        return self.messages.get(device, [])
 
     def get_device_list(self):
         """Returns a list of devices currently in the messages dictionary."""

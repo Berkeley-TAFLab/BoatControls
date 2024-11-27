@@ -172,37 +172,38 @@ class GraphsWindow(QWidget):
     def get_data_from_uart(self, device, attribute):
         data = []
         messages = self.main_window.uart_handler.get_messages_for_device(device)
-        
+
         for message in messages:
             timestamp = message['timestamp']
             parsed_data = bytes.fromhex(message['data'])
-            
+
             if len(parsed_data) < 2:
                 continue
-            
+
             message_type = parsed_data[0]
             payload = parsed_data[1:]
-            
-            if (attribute == "Longitude" and message_type == 0x09) or \
-               (attribute == "Latitude" and message_type == 0x0A) or \
-               (attribute == "Heading" and message_type == 0x0B) or \
-                (attribute == "Wind Dir" and message_type == 0x0D):
-                try:
-                    if message_type in [0x09, 0x0A]:  # Longitude and Latitude
-                        int_value = struct.unpack('!i', payload[:4])[0]
-                        float_value = int_value / 100000.0
-                    elif message_type == 0x0B:  # Heading
-                        float_value = struct.unpack('!f', payload[:4])[0] 
 
-                    elif message_type == 0x0D: 
-                        int_value = struct.unpack('!H',payload[:2])[0]
-                        float_value = int_value * 1.0
-                    
+            try:
+                if attribute == "Longitude" and message_type == 0x09 and len(payload) >= 4:
+                    int_value = struct.unpack('!i', payload[:4])[0]
+                    float_value = int_value / 100000.0
                     data.append((timestamp, float_value))
-                except struct.error:
-                    print(f"Error parsing data for message type {message_type}")
-        
+                elif attribute == "Latitude" and message_type == 0x0A and len(payload) >= 4:
+                    int_value = struct.unpack('!i', payload[:4])[0]
+                    float_value = int_value / 100000.0
+                    data.append((timestamp, float_value))
+                elif attribute == "Heading" and message_type == 0x0B and len(payload) >= 4:
+                    float_value = struct.unpack('!f', payload[:4])[0]
+                    data.append((timestamp, float_value))
+                elif attribute == "Wind Dir" and message_type == 0x0D and len(payload) >= 2:
+                    int_value = struct.unpack('!H', payload[:2])[0]
+                    data.append((timestamp, int_value))
+            except struct.error as e:
+                print(f"Error parsing {attribute}: {e}")
+
         return data
+
+
 
     def remove_chart(self, attribute):
         if attribute in self.charts:
@@ -253,14 +254,38 @@ class GraphsWindow(QWidget):
             return
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
         for device in self.main_window.uart_handler.get_device_list():
             longitude = self.get_latest_value(device, "Longitude")
             latitude = self.get_latest_value(device, "Latitude")
             heading = self.get_latest_value(device, "Heading")
             wind_dir = self.get_latest_value(device, "Wind Dir")
 
-            
-            self.csv_writer.writerow([timestamp, device, longitude, latitude, heading, wind_dir])
+            self.csv_writer.writerow([
+                timestamp,
+                device,
+                longitude if longitude else "",
+                latitude if latitude else "",
+                heading if heading else "",
+                wind_dir if wind_dir else "",
+            ])
+
+
+
+    def get_row_data(self, device):
+        """
+        Fetches the entire row of data for a given device.
+        """
+        # Simulate fetching the full row for the device from the internal data structures
+        if device in self.main_window.uart_handler.messages:
+            latest_message = self.main_window.uart_handler.messages[device][-1]
+            return [
+                latest_message.get("Longitude", ""),
+                latest_message.get("Latitude", ""),
+                latest_message.get("Heading", ""),
+                latest_message.get("Wind Dir", ""),
+            ]
+        return ["", "", "", ""]
 
     def get_latest_value(self, device, attribute):
         data = self.get_data_from_uart(device, attribute)
